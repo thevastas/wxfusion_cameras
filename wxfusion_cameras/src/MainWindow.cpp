@@ -1,7 +1,5 @@
 #include "MainWindow.h"
-#include "ControlPanel.h"
-#include "wx/artprov.h"
-#include "id.h"
+
 
 BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     EVT_MENU(wxID_EXIT, MainWindow::OnQuit)
@@ -13,7 +11,6 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     EVT_MENU(window::id::NIRPOI, MainWindow::OnNirPoi)
     EVT_MENU(window::id::CROSSHAIR, MainWindow::OnCrosshair)
 END_EVENT_TABLE()
-
 
 MainWindow::MainWindow(wxWindow* parent,
     wxWindowID id,
@@ -65,8 +62,15 @@ MainWindow::MainWindow(wxWindow* parent,
 
     
 
-    wxPanel* panel_image = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(800,600));
+
+
+
+    wxPanel* panel_image = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(960,540));
     panel_image->SetBackgroundColour(wxColor(64,64,64));
+
+
+
+
 
     wxPanel* panel_log = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(800, 100));
     panel_log->SetBackgroundColour(wxColor(64, 64, 64));
@@ -153,8 +157,6 @@ void MainWindow::OnRFPointerOff(wxCommandEvent& event)
 {
     wxMessageBox("Rangefinder pointer OFF not implemented");
 };
-
-
 
 MainWindow::~MainWindow()
 {

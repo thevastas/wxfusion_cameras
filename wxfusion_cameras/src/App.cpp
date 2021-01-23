@@ -1,8 +1,11 @@
+#define WIN32_LEAN_AND_MEAN
+#define BOOST_ALL_NO_LIB
 #include "App.h"
 #include "id.h"
 #include "MainWindow.h"
 
-IMPLEMENT_APP(App);
+INITIALIZE_EASYLOGGINGPP
+
 App::App()
 {
 
@@ -22,3 +25,4 @@ App::~App()
 {
 
 }
+IMPLEMENT_APP(App);

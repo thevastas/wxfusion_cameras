@@ -1,7 +1,5 @@
 #include "ControlPanel.h"
 
-#include "MainWindow.h"
-#include "id.h"
 
 //ControlPanel::ControlPanel(wxPanel* parent)
 PTZPanel::PTZPanel(wxFrame* parent)

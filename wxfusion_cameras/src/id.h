@@ -4,6 +4,7 @@ namespace window
 	enum id
 	{
 		MAINWINDOW = wxID_HIGHEST + 1,
+		VIEW = 100,
 		RFPOION = 110,
 		RFPOIOFF = 111,
 		RFMEASURE = 112,

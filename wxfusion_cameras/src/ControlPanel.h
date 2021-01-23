@@ -1,4 +1,5 @@
 #pragma once
+#include "Common.h"
 #include <wx/wx.h>
 #include <wx/panel.h>
 #include "wx/statbox.h"
@@ -6,6 +7,7 @@
 #include "wx/radiobut.h"
 #include "wx/listbox.h"
 #include "wx/bitmap.h"
+//#include "MainWindow.h"
 class PTZPanel : public wxPanel
 {
 public:

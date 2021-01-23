@@ -1,6 +1,9 @@
 #pragma once
+#include "Common.h"
 #include <wx/wx.h>
 #include "ControlPanel.h"
+#include "wx/artprov.h"
+#include "id.h"
 class MainWindow: public wxFrame
 {
 public:
