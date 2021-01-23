@@ -49,7 +49,20 @@ PTZPanel::PTZPanel(wxFrame* parent)
     m_ptzspeed = new wxSpinCtrl(this, window::id::BPTZSPEED,
         wxT("3"), wxPoint(230, ptzbuttonoriginy + 2*(ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize+20, ptzbuttonsize), wxSP_ARROW_KEYS,
         1, 5, 1);
+    m_ptzspeed->SetBackgroundColour(wxColor(214, 214, 214));
     
+    m_textpos = new wxStaticText(this, -1, wxT("Position"), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy + 3.5 * (ptzbuttonsize + ptzbuttonspacing)));
+    m_textpos->SetForegroundColour(wxColor(214, 214, 214));
+
+    m_pos1 = new wxButton(this, window::id::BPTZPOS1, wxT("1"), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_pos2 = new wxButton(this, window::id::BPTZPOS2, wxT("2"), wxPoint(ptzbuttonoriginx + ptzbuttonsize + ptzbuttonspacing, ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_pos3 = new wxButton(this, window::id::BPTZPOS3, wxT("3"), wxPoint(ptzbuttonoriginx + 2 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_pos4 = new wxButton(this, window::id::BPTZPOS4, wxT("4"), wxPoint(ptzbuttonoriginx + 3 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_pos5 = new wxButton(this, window::id::BPTZPOS5, wxT("5"), wxPoint(ptzbuttonoriginx + 4 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_pos6 = new wxButton(this, window::id::BPTZPOS6, wxT("6"), wxPoint(ptzbuttonoriginx + 5 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_pos7 = new wxButton(this, window::id::BPTZPOS7, wxT("7"), wxPoint(ptzbuttonoriginx + 6 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_pos8 = new wxButton(this, window::id::BPTZPOS8, wxT("8"), wxPoint(ptzbuttonoriginx + 7 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+
     Connect(window::id::BZOOMIN, wxEVT_COMMAND_BUTTON_CLICKED,
         wxCommandEventHandler(PTZPanel::OnZoomIn));
     Connect(window::id::BZOOMOUT, wxEVT_COMMAND_BUTTON_CLICKED,
@@ -68,7 +81,7 @@ void PTZPanel::OnZoomOut(wxCommandEvent& WXUNUSED(event))
 }
 
 RangeFinderPanel::RangeFinderPanel(wxFrame* parent)
-    : wxPanel(parent, -1, wxDefaultPosition, wxSize(100, 100))
+    : wxPanel(parent, -1, wxDefaultPosition, wxSize(300, 50))
 {
     m_parent = parent;
 
@@ -77,15 +90,15 @@ RangeFinderPanel::RangeFinderPanel(wxFrame* parent)
 }
 
 VideoSetPanel::VideoSetPanel(wxFrame* parent)
-    : wxPanel(parent, -1, wxDefaultPosition, wxSize(100, 100))
+    : wxPanel(parent, -1, wxDefaultPosition, wxSize(300, 200))
 {
     int originx = 10;
     int originy = 10;
     int spacing = 20;
     m_parent = parent;
 
-    m_text = new wxStaticText(this, -1, wxT("Video stream:"), wxPoint(originx, originy));
-    m_text->SetForegroundColour(wxColor(214, 214, 214));
+    m_textstream = new wxStaticText(this, -1, wxT("Video stream:"), wxPoint(originx, originy));
+    m_textstream->SetForegroundColour(wxColor(214, 214, 214));
 
     m_zoomstream = new wxRadioButton(this, window::id::BZOOMSTREAM, wxT("Zoom camera"), wxPoint(originx, originy+spacing));
     m_zoomstream->SetForegroundColour(wxColor(214, 214, 214));
@@ -96,7 +109,23 @@ VideoSetPanel::VideoSetPanel(wxFrame* parent)
     m_fusionstream = new wxRadioButton(this, window::id::BFUSIONSTREAM, wxT("Enable fusion"), wxPoint(originx, originy + 4*spacing));
     m_fusionstream->SetForegroundColour(wxColor(214, 214, 214));
 
+    m_textpip = new wxStaticText(this, -1, wxT("Picture-In-Picture:"), wxPoint(originx + 150, originy));
+    m_textpip->SetForegroundColour(wxColor(214, 214, 214));
 
+    m_pip = new wxListBox(this, window::id::BPIP, wxPoint(originx + 150, originy + spacing), wxSize(120, 4 * spacing));
+    m_pip->SetBackgroundColour(wxColor(214, 214, 214));
+    m_pip->Append("Disabled");
 }
 
+FusionRatioPanel::FusionRatioPanel(wxFrame* parent)
+    : wxPanel(parent, -1, wxDefaultPosition, wxSize(300, 70))
+{
+    m_parent = parent;
 
+    m_textratio = new wxStaticText(this, -1, wxT("Fusion ratio:"), wxPoint(10,10));
+    m_textratio->SetForegroundColour(wxColor(214, 214, 214));
+
+    m_fusionslider = new wxSlider(this, window::id::BFUSIONRATIO, 50, 0, 100,
+        wxPoint(10, 30), wxSize(280, -1));
+
+}

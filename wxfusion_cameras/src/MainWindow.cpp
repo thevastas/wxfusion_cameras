@@ -84,15 +84,19 @@ MainWindow::MainWindow(wxWindow* parent,
     m_videopanel = new VideoSetPanel(this);
     m_videopanel->SetBackgroundColour(wxColor(64, 64, 64));
 
+    m_fusionratiopanel = new FusionRatioPanel(this);
+    m_fusionratiopanel->SetBackgroundColour(wxColor(64, 64, 64));
+
     wxSizer* sizer_controls = new wxBoxSizer(wxVERTICAL);
-    sizer_controls->Add(m_videopanel, 1, wxEXPAND | wxBOTTOM, 5);
-    sizer_controls->Add(m_rfpanel, 1, wxEXPAND | wxBOTTOM, 5);
-    sizer_controls->Add(m_ptzpanel, 1);
+    sizer_controls->Add(m_videopanel, 0, wxEXPAND | wxBOTTOM, 5);
+    sizer_controls->Add(m_fusionratiopanel, 0, wxEXPAND | wxBOTTOM, 5);
+    sizer_controls->Add(m_rfpanel, 0, wxEXPAND | wxBOTTOM, 5);
+    sizer_controls->Add(m_ptzpanel, 1, wxEXPAND);
 
 
     wxSizer* sizer_top = new wxBoxSizer(wxHORIZONTAL);
     sizer_top->Add(panel_image, 0, wxEXPAND | wxRIGHT, 5);
-    sizer_top->Add(sizer_controls, 0);
+    sizer_top->Add(sizer_controls, 0, wxEXPAND);
 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(sizer_top, 0, wxEXPAND | wxTOP | wxLEFT | wxRIGHT, 5);

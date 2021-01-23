@@ -4,6 +4,7 @@
 #include "wx/statbox.h"
 #include "wx/spinctrl.h"
 #include "wx/radiobut.h"
+#include "wx/listbox.h"
 class PTZPanel : public wxPanel
 {
 public:
@@ -29,6 +30,15 @@ public:
 
 	wxSpinCtrl* m_ptzspeed;
 
+	wxButton* m_pos1;
+	wxButton* m_pos2;
+	wxButton* m_pos3;
+	wxButton* m_pos4;
+	wxButton* m_pos5;
+	wxButton* m_pos6;
+	wxButton* m_pos7;
+	wxButton* m_pos8;
+	wxStaticText* m_textpos;
 
 	wxFrame* m_parent;
 	//wxPanel* m_parent;
@@ -54,12 +64,26 @@ class VideoSetPanel : public wxPanel
 public:
 	VideoSetPanel(wxFrame* parent);
 
-	wxStaticText* m_text;
+	wxStaticText* m_textstream;
+	wxStaticText* m_textpip;
 
 	wxRadioButton* m_zoomstream;
 	wxRadioButton* m_nirstream;
 	wxRadioButton* m_thermalstream;
 	wxRadioButton* m_fusionstream;
+
+	wxListBox* m_pip;
+
+	wxFrame* m_parent;
+};
+
+class FusionRatioPanel : public wxPanel
+{
+public:
+	FusionRatioPanel(wxFrame* parent);
+	
+	wxStaticText* m_textratio;
+	wxSlider* m_fusionslider;
 
 	wxFrame* m_parent;
 };

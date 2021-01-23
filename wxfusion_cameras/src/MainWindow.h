@@ -16,6 +16,7 @@ public:
     PTZPanel *m_ptzpanel;
     RangeFinderPanel* m_rfpanel;
     VideoSetPanel* m_videopanel;
+    FusionRatioPanel* m_fusionratiopanel;
 
     // file functions
     void OnQuit(wxCommandEvent& event);
