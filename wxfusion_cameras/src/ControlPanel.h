@@ -5,19 +5,21 @@
 #include "wx/spinctrl.h"
 #include "wx/radiobut.h"
 #include "wx/listbox.h"
+#include "wx/bitmap.h"
 class PTZPanel : public wxPanel
 {
 public:
 	PTZPanel(wxFrame* parent);
 
-	wxButton* m_up;
-	wxButton* m_down;
-	wxButton* m_left;
-	wxButton* m_right;
-	wxButton* m_upright;
-	wxButton* m_downright;
-	wxButton* m_upleft;
-	wxButton* m_downleft;
+	//wxButton* m_up;
+	wxBitmapButton* m_up;
+	wxBitmapButton* m_down;
+	wxBitmapButton* m_left;
+	wxBitmapButton* m_right;
+	wxBitmapButton* m_upright;
+	wxBitmapButton* m_downright;
+	wxBitmapButton* m_upleft;
+	wxBitmapButton* m_downleft;
 
 	wxStaticText* m_textzoom;
 	wxStaticText* m_textfocus;

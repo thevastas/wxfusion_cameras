@@ -7,6 +7,7 @@
 PTZPanel::PTZPanel(wxFrame* parent)
 	: wxPanel(parent, -1, wxDefaultPosition, wxSize(300, 200))
 {
+    wxImage::AddHandler(new wxPNGHandler);
     m_parent = parent;
     
     // Pan tilt buttons
@@ -17,16 +18,16 @@ PTZPanel::PTZPanel(wxFrame* parent)
     int ptzbuttonoriginy = 10;
 
 
-    m_upleft = new wxButton(this, window::id::BUPLEFT, wxT("UL"),       wxPoint(ptzbuttonoriginx, ptzbuttonoriginy), wxSize(ptzbuttonsize, ptzbuttonsize));
-    m_up = new wxButton(this, window::id::BUP, wxT("U"),                wxPoint(ptzbuttonoriginx+ptzbuttonsize+ptzbuttonspacing, ptzbuttonoriginy), wxSize(ptzbuttonsize, ptzbuttonsize));
-    m_upright = new wxButton(this, window::id::BUPRIGHT, wxT("UR"),     wxPoint(ptzbuttonoriginx + 2 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_upleft = new wxBitmapButton(this, window::id::BUPLEFT, wxBitmap(wxT("img/arrow_upleft.png"), wxBITMAP_TYPE_PNG), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_up = new wxBitmapButton(this, window::id::BUP, wxBitmap(wxT("img/arrow_up.png"), wxBITMAP_TYPE_PNG), wxPoint(ptzbuttonoriginx + ptzbuttonsize + ptzbuttonspacing, ptzbuttonoriginy), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_upright = new wxBitmapButton(this, window::id::BUPRIGHT, wxBitmap(wxT("img/arrow_upright.png"), wxBITMAP_TYPE_PNG), wxPoint(ptzbuttonoriginx + 2 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy), wxSize(ptzbuttonsize, ptzbuttonsize));
 
-    m_left = new wxButton(this, window::id::BLEFT, wxT("L"),            wxPoint(ptzbuttonoriginx, ptzbuttonoriginy+ptzbuttonsize+ptzbuttonspacing), wxSize(ptzbuttonsize, ptzbuttonsize));
-    m_right = new wxButton(this, window::id::BRIGHT, wxT("R"),          wxPoint(ptzbuttonoriginx + 2 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + ptzbuttonsize + ptzbuttonspacing), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_left = new wxBitmapButton(this, window::id::BLEFT, wxBitmap(wxT("img/arrow_left.png"), wxBITMAP_TYPE_PNG), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy+ptzbuttonsize+ptzbuttonspacing), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_right = new wxBitmapButton(this, window::id::BRIGHT, wxBitmap(wxT("img/arrow_right.png"), wxBITMAP_TYPE_PNG), wxPoint(ptzbuttonoriginx + 2 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + ptzbuttonsize + ptzbuttonspacing), wxSize(ptzbuttonsize, ptzbuttonsize));
 
-    m_downleft = new wxButton(this, window::id::BDOWNLEFT, wxT("DL"),   wxPoint(ptzbuttonoriginx, ptzbuttonoriginy + 2 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
-    m_down = new wxButton(this, window::id::BDOWN, wxT("D"),            wxPoint(ptzbuttonoriginx + ptzbuttonsize + ptzbuttonspacing, ptzbuttonoriginy + 2 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
-    m_downright = new wxButton(this, window::id::BDOWNRIGHT, wxT("DR"), wxPoint(ptzbuttonoriginx + 2*(ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + 2 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_downleft = new wxBitmapButton(this, window::id::BDOWNLEFT, wxBitmap(wxT("img/arrow_downleft.png"), wxBITMAP_TYPE_PNG), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy + 2 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_down = new wxBitmapButton(this, window::id::BDOWN, wxBitmap(wxT("img/arrow_down.png"), wxBITMAP_TYPE_PNG),             wxPoint(ptzbuttonoriginx + ptzbuttonsize + ptzbuttonspacing, ptzbuttonoriginy + 2 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_downright = new wxBitmapButton(this, window::id::BDOWNRIGHT, wxBitmap(wxT("img/arrow_downright.png"), wxBITMAP_TYPE_PNG), wxPoint(ptzbuttonoriginx + 2*(ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + 2 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
 
     m_zoomin = new wxButton(this, window::id::BZOOMIN, wxT("+"),
         wxPoint(250, ptzbuttonoriginy), wxSize(ptzbuttonsize, ptzbuttonsize));
