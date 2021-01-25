@@ -16,7 +16,7 @@ bool App::OnInit()
 	if (!wxApp::OnInit())
 		return false;
 
-	MainWindow* main = new MainWindow(nullptr, window::id::MAINWINDOW, _("Main Window"));
+	MainWindow* main = new MainWindow(nullptr, window::id::MAINWINDOW, _("Main Window"),wxDefaultPosition, wxSize(1300,900));
 	main->Show();
 	return true;
 }

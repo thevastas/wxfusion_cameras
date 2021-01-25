@@ -78,7 +78,7 @@ void View::Start()
     }
 
     //m_p_cap = new cv::VideoCapture(0);
-    m_p_cap = new cv::VideoCapture("rtsp://192.168.1.168/main");
+    m_p_cap = new cv::VideoCapture("rtsp://192.168.30.168/main");
     if (!m_p_cap->isOpened())
     {
         wxPuts(wxT("Camera Open Error!"));

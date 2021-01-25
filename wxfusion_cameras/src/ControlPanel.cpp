@@ -1,8 +1,8 @@
-#include "ControlPanel.h"
-
+//#include "ControlPanel.h"
+#include "MainWindow.h"
 
 //ControlPanel::ControlPanel(wxPanel* parent)
-PTZPanel::PTZPanel(wxFrame* parent)
+PTZPanel::PTZPanel(wxPanel* parent)
 	: wxPanel(parent, -1, wxDefaultPosition, wxSize(300, 200))
 {
     wxImage::AddHandler(new wxPNGHandler);
@@ -79,7 +79,7 @@ void PTZPanel::OnZoomOut(wxCommandEvent& WXUNUSED(event))
 
 }
 
-RangeFinderPanel::RangeFinderPanel(wxFrame* parent)
+RangeFinderPanel::RangeFinderPanel(wxPanel* parent)
     : wxPanel(parent, -1, wxDefaultPosition, wxSize(300, 50))
 {
     m_parent = parent;
@@ -88,7 +88,7 @@ RangeFinderPanel::RangeFinderPanel(wxFrame* parent)
 
 }
 
-VideoSetPanel::VideoSetPanel(wxFrame* parent)
+VideoSetPanel::VideoSetPanel(wxPanel* parent)
     : wxPanel(parent, -1, wxDefaultPosition, wxSize(300, 200))
 {
     int originx = 10;
@@ -105,18 +105,102 @@ VideoSetPanel::VideoSetPanel(wxFrame* parent)
     m_nirstream->SetForegroundColour(wxColor(214, 214, 214));
     m_thermalstream = new wxRadioButton(this, window::id::BTHERMALSTREAM, wxT("LWIR camera"), wxPoint(originx, originy + 3*spacing));
     m_thermalstream->SetForegroundColour(wxColor(214, 214, 214));
-    m_fusionstream = new wxRadioButton(this, window::id::BFUSIONSTREAM, wxT("Enable fusion"), wxPoint(originx, originy + 4*spacing));
+    m_fusionstream = new wxRadioButton(this, window::id::BFUSIONSTREAM, wxT("Fusion"), wxPoint(originx, originy + 4*spacing));
     m_fusionstream->SetForegroundColour(wxColor(214, 214, 214));
+
+
+
+
 
     m_textpip = new wxStaticText(this, -1, wxT("Picture-In-Picture:"), wxPoint(originx + 150, originy));
     m_textpip->SetForegroundColour(wxColor(214, 214, 214));
 
+
     m_pip = new wxListBox(this, window::id::BPIP, wxPoint(originx + 150, originy + spacing), wxSize(120, 4 * spacing));
     m_pip->SetBackgroundColour(wxColor(214, 214, 214));
     m_pip->Append("Disabled");
+    m_pip->SetSelection(m_pip->FindString("Disabled"));
+
+    Connect(window::id::BZOOMSTREAM, wxEVT_RADIOBUTTON,
+        wxCommandEventHandler(VideoSetPanel::OnZoomStream));
+    Connect(window::id::BNIRSTREAM, wxEVT_RADIOBUTTON,
+        wxCommandEventHandler(VideoSetPanel::OnNirStream));
+    Connect(window::id::BTHERMALSTREAM, wxEVT_RADIOBUTTON,
+        wxCommandEventHandler(VideoSetPanel::OnThermalStream));
+    Connect(window::id::BFUSIONSTREAM, wxEVT_RADIOBUTTON,
+        wxCommandEventHandler(VideoSetPanel::OnFusionStream));
+    Connect(window::id::BPIP, wxEVT_LISTBOX,
+        wxCommandEventHandler(VideoSetPanel::OnPip));
+
 }
 
-FusionRatioPanel::FusionRatioPanel(wxFrame* parent)
+void VideoSetPanel::OnZoomStream(wxCommandEvent& WXUNUSED(event))
+{
+    wxArrayString strings;
+    strings.push_back("NIR");
+    strings.push_back("LWIR");
+    strings.push_back("Fusion");
+    strings.push_back("Disabled");
+    m_pip->Set(strings);
+}
+
+
+
+void VideoSetPanel::OnNirStream(wxCommandEvent& WXUNUSED(event))
+{
+    wxArrayString strings;
+    strings.push_back("Zoom");
+    strings.push_back("LWIR");
+    strings.push_back("Fusion");
+    strings.push_back("Disabled");
+    m_pip->Set(strings);
+}
+
+void VideoSetPanel::OnThermalStream(wxCommandEvent& WXUNUSED(event))
+{
+    wxArrayString strings;
+    strings.push_back("NIR");
+    strings.push_back("Zoom");
+    strings.push_back("Fusion");
+    strings.push_back("Disabled");
+    m_pip->Set(strings);
+}
+
+void VideoSetPanel::OnFusionStream(wxCommandEvent& WXUNUSED(event))
+{
+    wxArrayString strings;
+    strings.push_back("NIR");
+    strings.push_back("LWIR");
+    strings.push_back("Zoom");
+    strings.push_back("Disabled");
+    m_pip->Set(strings);
+}
+
+void VideoSetPanel::OnPip(wxCommandEvent& WXUNUSED(event))
+{
+    MainWindow* comm = (MainWindow*)m_parent->GetParent();
+
+    wxString m_pipchoice = m_pip->GetString(m_pip->GetSelection());
+    if (m_pipchoice == wxT("Fusion")) {
+        comm->m_fusionratiopanel->m_fusionslider->Enable();
+    }
+    else if (m_fusionstream->GetValue() == FALSE)  comm->m_fusionratiopanel->m_fusionslider->Disable();
+    else if (m_fusionstream->GetValue() == TRUE)  comm->m_fusionratiopanel->m_fusionslider->Enable();
+    if (m_pipchoice == wxT("Zoom")) {
+    }
+
+    if (m_pipchoice == wxT("NIR")) {
+    }
+
+    if (m_pipchoice == wxT("LWIR")) {
+    }
+
+    if (m_pipchoice == wxT("Disabled")) {
+    }
+}
+
+
+FusionRatioPanel::FusionRatioPanel(wxPanel* parent)
     : wxPanel(parent, -1, wxDefaultPosition, wxSize(300, 70))
 {
     m_parent = parent;
@@ -126,5 +210,6 @@ FusionRatioPanel::FusionRatioPanel(wxFrame* parent)
 
     m_fusionslider = new wxSlider(this, window::id::BFUSIONRATIO, 50, 0, 100,
         wxPoint(10, 30), wxSize(280, -1));
+    m_fusionslider->Disable();
 
 }

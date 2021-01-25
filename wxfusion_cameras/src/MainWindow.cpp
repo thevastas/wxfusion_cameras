@@ -19,8 +19,11 @@ MainWindow::MainWindow(wxWindow* parent,
     const wxSize& size,
     long style,
     const wxString& name):
+
     wxFrame(parent, id, title, pos, size, style, name)
 {
+    m_parent = new wxPanel(this, wxID_ANY);
+
     SetBackgroundColour(wxColor(32,32,32));
     wxMenuBar* menuBar = new wxMenuBar();
 
@@ -65,30 +68,30 @@ MainWindow::MainWindow(wxWindow* parent,
 
 
 
-    wxPanel* panel_image = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(960,540));
+    wxPanel* panel_image = new wxPanel(m_parent, wxID_ANY, wxDefaultPosition, wxSize(960,540));
     panel_image->SetBackgroundColour(wxColor(64,64,64));
 
 
 
 
 
-    wxPanel* panel_log = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(800, 100));
+    wxPanel* panel_log = new wxPanel(m_parent, wxID_ANY, wxDefaultPosition, wxSize(800, 100));
     panel_log->SetBackgroundColour(wxColor(64, 64, 64));
 
     //wxPanel* panel_controls = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(300, 700));
     //panel_controls->SetBackgroundColour(wxColor(200, 100, 100));
 
 
-    m_rfpanel = new RangeFinderPanel(this);
+    m_rfpanel = new RangeFinderPanel(m_parent);
     m_rfpanel->SetBackgroundColour(wxColor(64, 64, 64));
 
-    m_ptzpanel = new PTZPanel(this);
+    m_ptzpanel = new PTZPanel(m_parent);
     m_ptzpanel->SetBackgroundColour(wxColor(64, 64, 64));
 
-    m_videopanel = new VideoSetPanel(this);
+    m_videopanel = new VideoSetPanel(m_parent);
     m_videopanel->SetBackgroundColour(wxColor(64, 64, 64));
 
-    m_fusionratiopanel = new FusionRatioPanel(this);
+    m_fusionratiopanel = new FusionRatioPanel(m_parent);
     m_fusionratiopanel->SetBackgroundColour(wxColor(64, 64, 64));
 
     wxSizer* sizer_controls = new wxBoxSizer(wxVERTICAL);
@@ -119,7 +122,7 @@ MainWindow::MainWindow(wxWindow* parent,
 
     //panel_controls->SetSizerAndFit(sizer_buttons);
 
-    this->SetSizerAndFit(sizer);
+    m_parent->SetSizerAndFit(sizer);
 }
 
 // file functions

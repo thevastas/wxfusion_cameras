@@ -1,6 +1,5 @@
 #pragma once
 #include "Common.h"
-#include <wx/wx.h>
 #include "ControlPanel.h"
 #include "wx/artprov.h"
 #include "id.h"
@@ -20,6 +19,7 @@ public:
     RangeFinderPanel* m_rfpanel;
     VideoSetPanel* m_videopanel;
     FusionRatioPanel* m_fusionratiopanel;
+    wxPanel* m_parent;
 
     // file functions
     void OnQuit(wxCommandEvent& event);
