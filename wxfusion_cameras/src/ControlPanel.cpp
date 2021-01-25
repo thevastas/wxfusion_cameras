@@ -183,6 +183,7 @@ void VideoSetPanel::OnPip(wxCommandEvent& WXUNUSED(event))
     wxString m_pipchoice = m_pip->GetString(m_pip->GetSelection());
     if (m_pipchoice == wxT("Fusion")) {
         comm->m_fusionratiopanel->m_fusionslider->Enable();
+        comm->m_logpanel->m_logtext->AppendText("Enabled fusion mode\n");
     }
     else if (m_fusionstream->GetValue() == FALSE)  comm->m_fusionratiopanel->m_fusionslider->Disable();
     else if (m_fusionstream->GetValue() == TRUE)  comm->m_fusionratiopanel->m_fusionslider->Enable();
@@ -212,4 +213,20 @@ FusionRatioPanel::FusionRatioPanel(wxPanel* parent)
         wxPoint(10, 30), wxSize(280, -1));
     m_fusionslider->Disable();
 
+}
+
+LogPanel::LogPanel(wxPanel* parent)
+    : wxPanel(parent, -1, wxDefaultPosition, wxSize(1100, 100))
+{
+
+    m_parent = parent;
+    m_logtext = new wxTextCtrl(this,window::id::LOGTEXT, wxT("Welcome!\n"), wxDefaultPosition, wxSize(1300, 100), wxBORDER_NONE | wxTE_MULTILINE);
+    //m_logtext = new wxTextCtrl(this, window::id::LOGTEXT, wxT("Welcome!\n"), wxDefaultPosition, wxSize(800, 100), wxTE_MULTILINE);
+
+    m_logtext->SetBackgroundColour(wxColor(64, 64, 64));
+    m_logtext->SetForegroundColour(wxColor(214, 214, 214));
+
+    wxBoxSizer* sizer_log = new wxBoxSizer(wxHORIZONTAL);
+    sizer_log->Add(m_logtext, 0, wxEXPAND);
+    this->SetSizerAndFit(sizer_log);
 }

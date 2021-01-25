@@ -75,8 +75,9 @@ MainWindow::MainWindow(wxWindow* parent,
 
 
 
-    wxPanel* panel_log = new wxPanel(m_parent, wxID_ANY, wxDefaultPosition, wxSize(800, 100));
-    panel_log->SetBackgroundColour(wxColor(64, 64, 64));
+ 
+    m_logpanel = new LogPanel(m_parent);
+    m_logpanel->SetBackgroundColour(wxColor(64, 64, 64));
 
     //wxPanel* panel_controls = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(300, 700));
     //panel_controls->SetBackgroundColour(wxColor(200, 100, 100));
@@ -107,7 +108,7 @@ MainWindow::MainWindow(wxWindow* parent,
 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(sizer_top, 0, wxEXPAND | wxTOP | wxLEFT | wxRIGHT, 5);
-    sizer->Add(panel_log, 1, wxEXPAND | wxALL, 5);
+    sizer->Add(m_logpanel, 1, wxEXPAND | wxALL, 5);
 
     //wxSizer* sizer_buttons = new wxBoxSizer(wxVERTICAL);
     //sizer_buttons->Add(

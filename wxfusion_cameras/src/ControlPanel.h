@@ -98,3 +98,12 @@ public:
 
 	wxPanel* m_parent;
 };
+
+class LogPanel : public wxPanel
+{
+public:
+	LogPanel(wxPanel* parent);
+
+	wxPanel* m_parent;
+	wxTextCtrl* m_logtext;
+};

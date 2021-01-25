@@ -19,6 +19,7 @@ public:
     RangeFinderPanel* m_rfpanel;
     VideoSetPanel* m_videopanel;
     FusionRatioPanel* m_fusionratiopanel;
+    LogPanel* m_logpanel;
     wxPanel* m_parent;
 
     // file functions
