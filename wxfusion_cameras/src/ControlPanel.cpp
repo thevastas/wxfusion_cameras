@@ -215,6 +215,8 @@ FusionRatioPanel::FusionRatioPanel(wxPanel* parent)
 
 }
 
+
+
 LogPanel::LogPanel(wxPanel* parent)
     : wxPanel(parent, -1, wxDefaultPosition, wxSize(1100, 100))
 {

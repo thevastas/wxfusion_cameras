@@ -19,20 +19,22 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\bmpfromocvpanel.h" />
+    <ClInclude Include="src\convertmattowxbmp.h" />
     <ClInclude Include="src\easylogging.h" />
     <ClInclude Include="src\Common.h" />
     <ClInclude Include="src\ControlPanel.h" />
     <ClInclude Include="src\App.h" />
     <ClInclude Include="src\MainWindow.h" />
     <ClInclude Include="src\id.h" />
-    <ClInclude Include="src\View.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\bmpfromocvpanel.cpp" />
+    <ClCompile Include="src\convertmattowxbmp.cpp" />
     <ClCompile Include="src\easylogging.cpp" />
     <ClCompile Include="src\ControlPanel.cpp" />
     <ClCompile Include="src\App.cpp" />
     <ClCompile Include="src\MainWindow.cpp" />
-    <ClCompile Include="src\View.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -18,6 +18,8 @@ bool App::OnInit()
 
 	MainWindow* main = new MainWindow(nullptr, window::id::MAINWINDOW, _("Main Window"),wxDefaultPosition, wxSize(1300,900));
 	main->Show();
+	//(new MainWindow)->Show();
+
 	return true;
 }
 

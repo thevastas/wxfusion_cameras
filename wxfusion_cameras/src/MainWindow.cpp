@@ -1,16 +1,123 @@
-#include "MainWindow.h"
+#include "Common.h"
+#include <wx/wx.h>
+#include <wx/choicdlg.h>
+#include <wx/filedlg.h>
+#include <wx/listctrl.h>
+#include <wx/slider.h>
+#include <wx/textdlg.h>
+#include <wx/thread.h>
+#include <wx/utils.h>
 
+
+#include "bmpfromocvpanel.h"
+#include "convertmattowxbmp.h"
+#include "MainWindow.h"
 
 BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     EVT_MENU(wxID_EXIT, MainWindow::OnQuit)
     EVT_MENU(window::id::RFPOION, MainWindow::OnRFPointerOn)
     EVT_MENU(window::id::RFPOIOFF, MainWindow::OnRFPointerOff)
     EVT_MENU(window::id::RFMEASURE, MainWindow::OnRFMeasure)
-    EVT_MENU(window::id::ENABLEZOOMCAMERA, MainWindow::OnConnectZoom)
+    EVT_MENU(window::id::ENABLEZOOMCAMERA, MainWindow::OnIPCamera)
     EVT_MENU(window::id::THERMALPOI, MainWindow::OnThermalPoi)
     EVT_MENU(window::id::NIRPOI, MainWindow::OnNirPoi)
+    EVT_MENU(window::id::STREAMINFO, MainWindow::OnStreamInfo)
     EVT_MENU(window::id::CROSSHAIR, MainWindow::OnCrosshair)
+
 END_EVENT_TABLE()
+
+// A frame was retrieved from WebCam or IP Camera.
+wxDEFINE_EVENT(wxEVT_CAMERA_FRAME, wxThreadEvent);
+// Could not retrieve a frame, consider connection to the camera lost.
+wxDEFINE_EVENT(wxEVT_CAMERA_EMPTY, wxThreadEvent);
+// An exception was thrown in the camera thread.
+wxDEFINE_EVENT(wxEVT_CAMERA_EXCEPTION, wxThreadEvent);
+
+
+
+//
+// Worker thread for retrieving images from WebCam or IP Camera
+// and sending them to the main thread for display.
+class CameraThread : public wxThread
+{
+public:
+    struct CameraFrame
+    {
+        cv::Mat matBitmap;
+        long    timeGet{ 0 };
+    };
+
+    CameraThread(wxEvtHandler* eventSink, cv::VideoCapture* camera);
+
+protected:
+    wxEvtHandler* m_eventSink{ nullptr };
+    cv::VideoCapture* m_camera{ nullptr };
+
+    ExitCode Entry() override;
+};
+
+CameraThread::CameraThread(wxEvtHandler* eventSink, cv::VideoCapture* camera)
+    : wxThread(wxTHREAD_JOINABLE),
+    m_eventSink(eventSink), m_camera(camera)
+{
+    wxASSERT(m_eventSink);
+    wxASSERT(m_camera);
+}
+
+wxThread::ExitCode CameraThread::Entry()
+{
+    wxStopWatch  stopWatch;
+
+    while (!TestDestroy())
+    {
+        CameraFrame* frame = nullptr;
+
+        try
+        {
+            frame = new CameraFrame;
+            stopWatch.Start();
+            (*m_camera) >> frame->matBitmap;
+            frame->timeGet = stopWatch.Time();
+
+            if (!frame->matBitmap.empty())
+            {
+                wxThreadEvent* evt = new wxThreadEvent(wxEVT_CAMERA_FRAME);
+
+                evt->SetPayload(frame);
+                m_eventSink->QueueEvent(evt);
+            }
+            else // connection to camera lost
+            {
+                m_eventSink->QueueEvent(new wxThreadEvent(wxEVT_CAMERA_EMPTY));
+                wxDELETE(frame);
+                break;
+            }
+        }
+        catch (const std::exception& e)
+        {
+            wxThreadEvent* evt = new wxThreadEvent(wxEVT_CAMERA_EXCEPTION);
+
+            wxDELETE(frame);
+            evt->SetString(e.what());
+            m_eventSink->QueueEvent(evt);
+            break;
+        }
+        catch (...)
+        {
+            wxThreadEvent* evt = new wxThreadEvent(wxEVT_CAMERA_EXCEPTION);
+
+            wxDELETE(frame);
+            evt->SetString("Unknown exception");
+            m_eventSink->QueueEvent(evt);
+            break;
+
+        }
+
+
+    }
+
+    return static_cast<wxThread::ExitCode>(nullptr);
+}
 
 MainWindow::MainWindow(wxWindow* parent,
     wxWindowID id,
@@ -22,6 +129,11 @@ MainWindow::MainWindow(wxWindow* parent,
 
     wxFrame(parent, id, title, pos, size, style, name)
 {
+
+    //cv::setBreakOnError(true);
+    //warning
+
+    //main panel
     m_parent = new wxPanel(this, wxID_ANY);
 
     SetBackgroundColour(wxColor(32,32,32));
@@ -57,31 +169,20 @@ MainWindow::MainWindow(wxWindow* parent,
     viewMenu->Append(window::id::CROSSHAIR, "Enable crosshair");
 
     // OPTIONS MENU
-    wxMenu* optionsMenu = new wxMenu();
+    optionsMenu = new wxMenu();
     menuBar->Append(optionsMenu, _("&Options"));
     optionsMenu->Append(window::id::CONNSETTINGS, "Connection settings");
+    optionsMenu->Append(window::id::STREAMINFO, "Stream information");
         
     SetMenuBar(menuBar);
 
-    
+    m_bitmapPanel = new wxBitmapFromOpenCVPanel(m_parent);
 
-
-
-
-    wxPanel* panel_image = new wxPanel(m_parent, wxID_ANY, wxDefaultPosition, wxSize(960,540));
-    panel_image->SetBackgroundColour(wxColor(64,64,64));
-
-
-
-
-
- 
     m_logpanel = new LogPanel(m_parent);
     m_logpanel->SetBackgroundColour(wxColor(64, 64, 64));
 
     //wxPanel* panel_controls = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(300, 700));
     //panel_controls->SetBackgroundColour(wxColor(200, 100, 100));
-
 
     m_rfpanel = new RangeFinderPanel(m_parent);
     m_rfpanel->SetBackgroundColour(wxColor(64, 64, 64));
@@ -103,12 +204,13 @@ MainWindow::MainWindow(wxWindow* parent,
 
 
     wxSizer* sizer_top = new wxBoxSizer(wxHORIZONTAL);
-    sizer_top->Add(panel_image, 0, wxEXPAND | wxRIGHT, 5);
+
+    sizer_top->Add(m_bitmapPanel, 1, wxEXPAND | wxRIGHT, 5);
     sizer_top->Add(sizer_controls, 0, wxEXPAND);
 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-    sizer->Add(sizer_top, 0, wxEXPAND | wxTOP | wxLEFT | wxRIGHT, 5);
-    sizer->Add(m_logpanel, 1, wxEXPAND | wxALL, 5);
+    sizer->Add(sizer_top, 1, wxEXPAND | wxTOP | wxLEFT | wxRIGHT, 5);
+    sizer->Add(m_logpanel, 0, wxEXPAND | wxALL, 5);
 
     //wxSizer* sizer_buttons = new wxBoxSizer(wxVERTICAL);
     //sizer_buttons->Add(
@@ -123,18 +225,31 @@ MainWindow::MainWindow(wxWindow* parent,
 
     //panel_controls->SetSizerAndFit(sizer_buttons);
 
+    SetMinClientSize(FromDIP(wxSize(600, 400)));
+    SetSize(FromDIP(wxSize(800, 600)));
+
     m_parent->SetSizerAndFit(sizer);
+
+    Clear();
+    Bind(wxEVT_CAMERA_FRAME, &MainWindow::OnCameraFrame, this);
+    Bind(wxEVT_CAMERA_EMPTY, &MainWindow::OnCameraEmpty, this);
+    Bind(wxEVT_CAMERA_EXCEPTION, &MainWindow::OnCameraException, this);
 }
+
+
+MainWindow::~MainWindow()
+{
+    DeleteCameraThread();
+}
+
 
 // file functions
 void MainWindow::OnConnectZoom(wxCommandEvent& event) {
-    wxMessageBox("Zoom camera connected");
-}
 
+}
 void MainWindow::OnQuit(wxCommandEvent& event) {
     Close();
 }
-
 // view functions
 void MainWindow::OnNirPoi(wxCommandEvent& event)
 {
@@ -162,8 +277,214 @@ void MainWindow::OnRFPointerOff(wxCommandEvent& event)
     wxMessageBox("Rangefinder pointer OFF not implemented");
 };
 
-MainWindow::~MainWindow()
+wxBitmap MainWindow::ConvertMatToBitmap(const cv::Mat& matBitmap, long& timeConvert)
 {
+    wxCHECK(!matBitmap.empty(), wxBitmap());
+
+    wxBitmap    bitmap(matBitmap.cols, matBitmap.rows, 24);
+    bool        converted = false;
+    wxStopWatch stopWatch;
+    long        time = 0;
+
+    stopWatch.Start();
+    converted = ConvertMatBitmapTowxBitmap(matBitmap, bitmap);
+    time = stopWatch.Time();
+
+    if (!converted)
+    {
+        wxLogError("Could not convert Mat to wxBitmap.");
+        return wxBitmap();
+    }
+
+    timeConvert = time;
+    return bitmap;
+}
+
+void MainWindow::Clear()
+{
+    DeleteCameraThread();
+
+    if (m_videoCapture)
+    {
+        delete m_videoCapture;
+        m_videoCapture = nullptr;
+    }
+
+    m_mode = Empty;
+    m_sourceName.clear();
+    m_currentVideoFrameNumber = 0;
+
+    m_bitmapPanel->SetBitmap(wxBitmap(), 0, 0);
+
+    optionsMenu->Enable(window::id::STREAMINFO,0);
+    //m_propertiesButton->Disable();
 
 }
+
+
+bool MainWindow::StartCameraCapture(const wxString& address, const wxSize& resolution,
+    bool useMJPEG)
+{
+    const bool        isDefaultWebCam = address.empty();
+    cv::VideoCapture* cap = nullptr;
+
+    Clear();
+
+    {
+        wxWindowDisabler disabler;
+        wxBusyCursor     busyCursor;
+
+
+        cap = new cv::VideoCapture(address.ToStdString());
+    }
+
+    if (!cap->isOpened())
+    {
+        delete cap;
+        wxLogError("Could not connect to the camera.");
+        return false;
+    }
+
+    m_videoCapture = cap;
+
+    if (!StartCameraThread())
+    {
+        Clear();
+        return false;
+    }
+
+    return true;
+}
+
+bool MainWindow::StartCameraThread()
+{
+    DeleteCameraThread();
+
+    m_cameraThread = new CameraThread(this, m_videoCapture);
+    if (m_cameraThread->Run() != wxTHREAD_NO_ERROR)
+    {
+        delete m_cameraThread;
+        m_cameraThread = nullptr;
+        wxLogError("Could not create the thread needed to retrieve the images from a camera.");
+        return false;
+    }
+
+    return true;
+}
+
+
+void MainWindow::DeleteCameraThread()
+{
+    if (m_cameraThread)
+    {
+        m_cameraThread->Delete();
+        delete m_cameraThread;
+        m_cameraThread = nullptr;
+    }
+}
+
+void MainWindow::OnIPCamera(wxCommandEvent&)
+{
+    static wxString address = "rtsp://192.168.30.168/main";
+    if (StartCameraCapture(address))
+    {
+        m_mode = IPCamera;
+        m_sourceName = address;
+        //m_propertiesButton->Enable();
+        optionsMenu->Enable(window::id::STREAMINFO, 1);
+    }
+}
+
+void MainWindow::OnClear(wxCommandEvent&)
+{
+    Clear();
+}
+
+void MainWindow::OnStreamInfo(wxCommandEvent&)
+{
+    wxArrayString properties;
+
+    properties.push_back(wxString::Format("Source: %s", m_sourceName));
+
+    if (m_mode == Image)
+    {
+        const wxBitmap& bmp = m_bitmapPanel->GetBitmap();
+
+        wxCHECK_RET(bmp.IsOk(), "Invalid bitmap in m_bitmapPanel");
+        properties.push_back(wxString::Format("Width: %d", bmp.GetWidth()));
+        properties.push_back(wxString::Format("Height: %d", bmp.GetHeight()));
+    }
+
+    if (m_videoCapture)
+    {
+        const int  fourCCInt = static_cast<int>(m_videoCapture->get(cv::CAP_PROP_FOURCC));
+        const char fourCCStr[] = { (char)(fourCCInt & 0XFF),
+                                  (char)((fourCCInt & 0XFF00) >> 8),
+                                  (char)((fourCCInt & 0XFF0000) >> 16),
+                                  (char)((fourCCInt & 0XFF000000) >> 24), 0 };
+
+        properties.push_back(wxString::Format("Backend: %s", wxString(m_videoCapture->getBackendName())));
+
+        properties.push_back(wxString::Format("Width: %.0f", m_videoCapture->get(cv::CAP_PROP_FRAME_WIDTH)));
+        properties.push_back(wxString::Format("Height: %0.f", m_videoCapture->get(cv::CAP_PROP_FRAME_HEIGHT)));
+
+        properties.push_back(wxString::Format("FourCC: %s", fourCCStr));
+        properties.push_back(wxString::Format("FPS: %.1f", m_videoCapture->get(cv::CAP_PROP_FPS)));
+
+        if (m_mode == Video)
+        {
+            // abuse wxDateTime to display position in video as time
+            wxDateTime time(static_cast<time_t>(m_videoCapture->get(cv::CAP_PROP_POS_MSEC) / 1000));
+
+            time.MakeUTC(true);
+
+            properties.push_back(wxString::Format("Current frame: %.0f", m_videoCapture->get(cv::CAP_PROP_POS_FRAMES) - 1.0));
+            properties.push_back(wxString::Format("Current time: %s", time.FormatISOTime()));
+            properties.push_back(wxString::Format("Total frame count: %.f", m_videoCapture->get(cv::CAP_PROP_FRAME_COUNT)));
+#if CV_VERSION_MAJOR > 4 || (CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 3 )
+            properties.push_back(wxString::Format("Bitrate: %.0f kbits/s", m_videoCapture->get(cv::CAP_PROP_BITRATE)));
+#endif
+        }
+    }
+
+    wxGetSingleChoice("Name: value", "Properties", properties, this);
+}
+
+void MainWindow::OnCameraFrame(wxThreadEvent& evt)
+{
+    CameraThread::CameraFrame* frame = evt.GetPayload<CameraThread::CameraFrame*>();
+
+    // After deleting the camera thread we may still get a stray frame
+    // from yet unprocessed event, just silently drop it.
+    if (m_mode != IPCamera && m_mode != WebCam)
+    {
+        delete frame;
+        return;
+    }
+
+    long     timeConvert = 0;
+    wxBitmap bitmap = ConvertMatToBitmap(frame->matBitmap, timeConvert);
+
+    if (bitmap.IsOk())
+        m_bitmapPanel->SetBitmap(bitmap, frame->timeGet, timeConvert);
+    else
+        m_bitmapPanel->SetBitmap(wxBitmap(), 0, 0);
+
+    delete frame;
+}
+
+void MainWindow::OnCameraEmpty(wxThreadEvent&)
+{
+    wxLogError("Connection to the camera lost.");
+
+    Clear();
+}
+
+void MainWindow::OnCameraException(wxThreadEvent& evt)
+{
+    wxLogError("Exception in the camera thread: %s", evt.GetString());
+    Clear();
+}
+
+
 

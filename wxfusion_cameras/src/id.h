@@ -13,6 +13,7 @@ namespace window
 		NIRPOI = 131,
 		CROSSHAIR = 132,
 		CONNSETTINGS = 140,
+		STREAMINFO = 141,
 		BZOOMIN = 1001,
 		BZOOMOUT = 1002,
 		BUP = 1003,
