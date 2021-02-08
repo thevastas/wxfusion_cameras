@@ -19,6 +19,7 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     EVT_MENU(window::id::RFPOIOFF, MainWindow::OnRFPointerOff)
     EVT_MENU(window::id::RFMEASURE, MainWindow::OnRFMeasure)
     EVT_MENU(window::id::ENABLEZOOMCAMERA, MainWindow::OnIPCamera)
+    EVT_MENU(window::id::ENABLELWIRCAMERA, MainWindow::OnLWIRCamera)
     EVT_MENU(window::id::THERMALPOI, MainWindow::OnThermalPoi)
     EVT_MENU(window::id::NIRPOI, MainWindow::OnNirPoi)
     EVT_MENU(window::id::STREAMINFO, MainWindow::OnStreamInfo)
@@ -27,11 +28,19 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
 END_EVENT_TABLE()
 
 // A frame was retrieved from WebCam or IP Camera.
-wxDEFINE_EVENT(wxEVT_CAMERA_FRAME, wxThreadEvent);
+wxDEFINE_EVENT(wxEVT_IPCAMERA_FRAME, wxThreadEvent);
 // Could not retrieve a frame, consider connection to the camera lost.
-wxDEFINE_EVENT(wxEVT_CAMERA_EMPTY, wxThreadEvent);
+wxDEFINE_EVENT(wxEVT_IPCAMERA_EMPTY, wxThreadEvent);
 // An exception was thrown in the camera thread.
-wxDEFINE_EVENT(wxEVT_CAMERA_EXCEPTION, wxThreadEvent);
+wxDEFINE_EVENT(wxEVT_IPCAMERA_EXCEPTION, wxThreadEvent);
+
+
+// A frame was retrieved from WebCam or IP Camera.
+wxDEFINE_EVENT(wxEVT_LWIRCAMERA_FRAME, wxThreadEvent);
+// Could not retrieve a frame, consider connection to the camera lost.
+wxDEFINE_EVENT(wxEVT_LWIRCAMERA_EMPTY, wxThreadEvent);
+// An exception was thrown in the camera thread.
+wxDEFINE_EVENT(wxEVT_LWIRCAMERA_EXCEPTION, wxThreadEvent);
 
 
 
@@ -76,26 +85,26 @@ wxThread::ExitCode CameraThread::Entry()
         {
             frame = new CameraFrame;
             stopWatch.Start();
-            (*m_camera) >> frame->matBitmap;
-            frame->timeGet = stopWatch.Time();
+            (*m_camera) >> frame->matBitmap; //retrieve frame from capture
+            frame->timeGet = stopWatch.Time(); //measure retrieval time
 
-            if (!frame->matBitmap.empty())
+            if (!frame->matBitmap.empty()) //if successful, set payload
             {
-                wxThreadEvent* evt = new wxThreadEvent(wxEVT_CAMERA_FRAME);
+                wxThreadEvent* evt = new wxThreadEvent(wxEVT_IPCAMERA_FRAME);
 
                 evt->SetPayload(frame);
                 m_eventSink->QueueEvent(evt);
             }
             else // connection to camera lost
             {
-                m_eventSink->QueueEvent(new wxThreadEvent(wxEVT_CAMERA_EMPTY));
+                m_eventSink->QueueEvent(new wxThreadEvent(wxEVT_IPCAMERA_EMPTY));
                 wxDELETE(frame);
                 break;
             }
         }
         catch (const std::exception& e)
         {
-            wxThreadEvent* evt = new wxThreadEvent(wxEVT_CAMERA_EXCEPTION);
+            wxThreadEvent* evt = new wxThreadEvent(wxEVT_IPCAMERA_EXCEPTION);
 
             wxDELETE(frame);
             evt->SetString(e.what());
@@ -104,7 +113,7 @@ wxThread::ExitCode CameraThread::Entry()
         }
         catch (...)
         {
-            wxThreadEvent* evt = new wxThreadEvent(wxEVT_CAMERA_EXCEPTION);
+            wxThreadEvent* evt = new wxThreadEvent(wxEVT_IPCAMERA_EXCEPTION);
 
             wxDELETE(frame);
             evt->SetString("Unknown exception");
@@ -119,6 +128,102 @@ wxThread::ExitCode CameraThread::Entry()
     return static_cast<wxThread::ExitCode>(nullptr);
 }
 
+
+//--------------------------------------------------------
+
+class LWIRCameraThread : public wxThread
+{
+public:
+    struct CameraFrame
+    {
+        cv::Mat matBitmap;
+        long    timeGet{ 0 };
+    };
+    ThermalCam lwirt;
+    LWIRCameraThread(wxEvtHandler* eventSink, HANDLE handle);
+
+protected:
+    wxEvtHandler* m_eventSink{ nullptr };
+    HANDLE m_lwircamera{ nullptr };
+
+    ExitCode Entry() override;
+};
+
+LWIRCameraThread::LWIRCameraThread(wxEvtHandler* eventSink, HANDLE handle)
+    : wxThread(wxTHREAD_JOINABLE),
+    m_eventSink(eventSink), m_lwircamera(handle)
+{
+    
+    wxASSERT(m_eventSink);
+    wxASSERT(m_lwircamera);
+}
+
+wxThread::ExitCode LWIRCameraThread::Entry()
+{
+    wxStopWatch  stopWatch;
+
+    while (!TestDestroy())
+    {
+        CameraFrame* frame = nullptr;
+
+        try
+        {
+            frame = new CameraFrame;
+            stopWatch.Start();
+            frame->matBitmap = lwirt.GetFrame(m_lwircamera);
+            //cv::cvtColor(frame->matBitmap, frame->matBitmap, cv::COLOR_GRAY2BGR);
+            //Proxy640USB_GetImage(m_lwircamera, frame->matBitmap, frame->meta, 1);
+            //(*m_lwircamera) >> frame->matBitmap; //retrieve frame from capture
+            //thermal.getframe
+            frame->timeGet = stopWatch.Time(); //measure retrieval time
+
+                //wxThreadEvent* evt = new wxThreadEvent(wxEVT_LWIRCAMERA_FRAME);
+
+                //evt->SetPayload(frame);
+                //m_eventSink->QueueEvent(evt);
+
+            //WARNING
+            if (!frame->matBitmap.empty()) //if successful, set payload
+            {
+                wxThreadEvent* evt = new wxThreadEvent(wxEVT_LWIRCAMERA_FRAME);
+
+                evt->SetPayload(frame);
+                m_eventSink->QueueEvent(evt);
+            }
+            else // connection to camera lost
+            {
+                m_eventSink->QueueEvent(new wxThreadEvent(wxEVT_IPCAMERA_EMPTY));
+                wxDELETE(frame);
+                break;
+            }
+            //WARNING
+        }
+        catch (const std::exception& e)
+        {
+            wxThreadEvent* evt = new wxThreadEvent(wxEVT_LWIRCAMERA_EXCEPTION);
+
+            wxDELETE(frame);
+            evt->SetString(e.what());
+            m_eventSink->QueueEvent(evt);
+            break;
+        }
+        catch (...)
+        {
+            wxThreadEvent* evt = new wxThreadEvent(wxEVT_LWIRCAMERA_EXCEPTION);
+
+            wxDELETE(frame);
+            evt->SetString("Unknown exception");
+            m_eventSink->QueueEvent(evt);
+            break;
+
+        }
+
+
+    }
+
+    return static_cast<wxThread::ExitCode>(nullptr);
+}
+//--------------------------------------------------------
 MainWindow::MainWindow(wxWindow* parent,
     wxWindowID id,
     const wxString& title,
@@ -160,6 +265,7 @@ MainWindow::MainWindow(wxWindow* parent,
     wxMenu* cameraMenu = new wxMenu();
     menuBar->Append(cameraMenu, _("&Camera"));
     cameraMenu->Append(window::id::ENABLEZOOMCAMERA, "Enable zoom camera");
+    cameraMenu->Append(window::id::ENABLELWIRCAMERA, "Enable LWIR camera");
 
     // VIEW MENU
     wxMenu* viewMenu = new wxMenu();
@@ -231,15 +337,18 @@ MainWindow::MainWindow(wxWindow* parent,
     m_parent->SetSizerAndFit(sizer);
 
     Clear();
-    Bind(wxEVT_CAMERA_FRAME, &MainWindow::OnCameraFrame, this);
-    Bind(wxEVT_CAMERA_EMPTY, &MainWindow::OnCameraEmpty, this);
-    Bind(wxEVT_CAMERA_EXCEPTION, &MainWindow::OnCameraException, this);
+    Bind(wxEVT_IPCAMERA_FRAME, &MainWindow::OnCameraFrame, this);
+    Bind(wxEVT_IPCAMERA_EMPTY, &MainWindow::OnCameraEmpty, this);
+    Bind(wxEVT_IPCAMERA_EXCEPTION, &MainWindow::OnCameraException, this);
+    Bind(wxEVT_LWIRCAMERA_FRAME, &MainWindow::OnLWIRCameraFrame, this);
+    Bind(wxEVT_LWIRCAMERA_EMPTY, &MainWindow::OnCameraEmpty, this);
+    Bind(wxEVT_LWIRCAMERA_EXCEPTION, &MainWindow::OnCameraException, this);
 }
 
 
 MainWindow::~MainWindow()
 {
-    DeleteCameraThread();
+    DeleteIPCameraThread();
 }
 
 
@@ -302,7 +411,7 @@ wxBitmap MainWindow::ConvertMatToBitmap(const cv::Mat& matBitmap, long& timeConv
 
 void MainWindow::Clear()
 {
-    DeleteCameraThread();
+    DeleteIPCameraThread();
 
     if (m_videoCapture)
     {
@@ -322,7 +431,7 @@ void MainWindow::Clear()
 }
 
 
-bool MainWindow::StartCameraCapture(const wxString& address, const wxSize& resolution,
+bool MainWindow::StartIPCameraCapture(const wxString& address, const wxSize& resolution,
     bool useMJPEG)
 {
     const bool        isDefaultWebCam = address.empty();
@@ -341,13 +450,13 @@ bool MainWindow::StartCameraCapture(const wxString& address, const wxSize& resol
     if (!cap->isOpened())
     {
         delete cap;
-        wxLogError("Could not connect to the camera.");
+        wxLogError("Could not connect to the IP camera.");
         return false;
     }
 
     m_videoCapture = cap;
 
-    if (!StartCameraThread())
+    if (!StartIPCameraThread())
     {
         Clear();
         return false;
@@ -356,9 +465,49 @@ bool MainWindow::StartCameraCapture(const wxString& address, const wxSize& resol
     return true;
 }
 
-bool MainWindow::StartCameraThread()
+bool MainWindow::StartLWIRCameraCapture(HANDLE handle)
 {
-    DeleteCameraThread();
+    Clear();
+
+    if (!Proxy640USB_IsConnectToModule(handle) == eProxy640USBSuccess)
+    {
+        wxLogError("Could not connect to the LWIR camera.");
+        return false;
+    }
+
+    lwir.Setup(handle);
+
+    if (!StartLWIRCameraThread())
+    {
+        Clear();
+        return false;
+    }
+
+    return true;
+
+}
+
+bool MainWindow::StartLWIRCameraThread()
+{
+    DeleteLWIRCameraThread();
+
+    m_lwircameraThread = new LWIRCameraThread(this, m_lwirhandle);
+    if (m_lwircameraThread->Run() != wxTHREAD_NO_ERROR)
+    {
+        delete m_lwircameraThread;
+        m_lwircameraThread = nullptr;
+        wxLogError("Could not create the thread needed to retrieve the images from a camera.");
+        return false;
+    }
+
+    return true;
+}
+
+
+
+bool MainWindow::StartIPCameraThread()
+{
+    DeleteIPCameraThread();
 
     m_cameraThread = new CameraThread(this, m_videoCapture);
     if (m_cameraThread->Run() != wxTHREAD_NO_ERROR)
@@ -372,8 +521,17 @@ bool MainWindow::StartCameraThread()
     return true;
 }
 
+void MainWindow::DeleteLWIRCameraThread()
+{
+    if (m_lwircameraThread)
+    {
+        m_lwircameraThread->Delete();
+        delete m_lwircameraThread;
+        m_lwircameraThread = nullptr;
+    }
+}
 
-void MainWindow::DeleteCameraThread()
+void MainWindow::DeleteIPCameraThread()
 {
     if (m_cameraThread)
     {
@@ -386,12 +544,25 @@ void MainWindow::DeleteCameraThread()
 void MainWindow::OnIPCamera(wxCommandEvent&)
 {
     static wxString address = "rtsp://192.168.30.168/main";
-    if (StartCameraCapture(address))
+    if (StartIPCameraCapture(address))
     {
         m_mode = IPCamera;
         m_sourceName = address;
         //m_propertiesButton->Enable();
         optionsMenu->Enable(window::id::STREAMINFO, 1);
+    }
+}
+
+void MainWindow::OnLWIRCamera(wxCommandEvent&)
+{
+    m_lwirhandle = lwir.Init();
+    //static wxString address = "rtsp://192.168.30.168/main";
+    if (StartLWIRCameraCapture(m_lwirhandle))
+    {
+        m_lwirhandle = lwir.Init();
+        m_mode = LWIRCamera;
+        //m_propertiesButton->Enable();
+        //optionsMenu->Enable(window::id::STREAMINFO, 1);
     }
 }
 
@@ -456,7 +627,30 @@ void MainWindow::OnCameraFrame(wxThreadEvent& evt)
 
     // After deleting the camera thread we may still get a stray frame
     // from yet unprocessed event, just silently drop it.
-    if (m_mode != IPCamera && m_mode != WebCam)
+    if (m_mode != IPCamera)
+    {
+        delete frame;
+        return;
+    }
+
+    long     timeConvert = 0;
+    wxBitmap bitmap = ConvertMatToBitmap(frame->matBitmap, timeConvert);
+
+    if (bitmap.IsOk())
+        m_bitmapPanel->SetBitmap(bitmap, frame->timeGet, timeConvert);
+    else
+        m_bitmapPanel->SetBitmap(wxBitmap(), 0, 0);
+
+    delete frame;
+}
+
+void MainWindow::OnLWIRCameraFrame(wxThreadEvent& evt)
+{
+    LWIRCameraThread::CameraFrame* frame = evt.GetPayload<LWIRCameraThread::CameraFrame*>();
+
+    // After deleting the camera thread we may still get a stray frame
+    // from yet unprocessed event, just silently drop it.
+    if (m_mode != LWIRCamera)
     {
         delete frame;
         return;
@@ -485,6 +679,8 @@ void MainWindow::OnCameraException(wxThreadEvent& evt)
     wxLogError("Exception in the camera thread: %s", evt.GetString());
     Clear();
 }
+
+
 
 
 

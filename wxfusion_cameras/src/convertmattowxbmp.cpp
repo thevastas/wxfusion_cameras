@@ -52,7 +52,7 @@ namespace
 bool ConvertMatBitmapTowxBitmap(const cv::Mat& matBitmap, wxBitmap& bitmap)
 {
     wxCHECK(!matBitmap.empty(), false);
-    wxCHECK(matBitmap.type() == CV_8UC3, false);
+    wxCHECK(matBitmap.type() == CV_8UC3 , false); 
     wxCHECK(matBitmap.dims == 2, false);
     wxCHECK(bitmap.IsOk(), false);
     wxCHECK(bitmap.GetWidth() == matBitmap.cols && bitmap.GetHeight() == matBitmap.rows, false);

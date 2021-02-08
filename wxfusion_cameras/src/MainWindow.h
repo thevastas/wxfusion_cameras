@@ -3,6 +3,7 @@
 #include "ControlPanel.h"
 #include "wx/artprov.h"
 #include "id.h"
+#include "ThermalCam.h"
 //#include "bmpfromocvpanel.h"
 //#include "View.h"
 
@@ -16,6 +17,7 @@ namespace cv
 
 
 class CameraThread;
+class LWIRCameraThread;
 
 class MainWindow: public wxFrame
 {
@@ -54,7 +56,7 @@ public:
     // camera functions
     void OnConnectZoom(wxCommandEvent& event);
     // options functions
-
+    ThermalCam lwir;
 private:
     enum Mode //for the future cameras
     {
@@ -63,6 +65,7 @@ private:
         Video,
         WebCam,
         IPCamera,
+        LWIRCamera
     };
 
     Mode                     m_mode{ Empty };
@@ -71,6 +74,10 @@ private:
 
     cv::VideoCapture* m_videoCapture{ nullptr };
     CameraThread* m_cameraThread{ nullptr };
+    
+    LWIRCameraThread* m_lwircameraThread{ nullptr };
+    HANDLE m_lwirhandle;
+    
     
     wxBitmapFromOpenCVPanel* m_bitmapPanel;
     wxSlider* m_videoSlider;
@@ -82,18 +89,22 @@ private:
 
     // If address is empty, the default webcam is used.
     // resolution and useMJPEG are used only for webcam.
-    bool StartCameraCapture(const wxString& address,
+    bool StartIPCameraCapture(const wxString& address,
         const wxSize& resolution = wxSize(),
         bool useMJPEG = false);
-    bool StartCameraThread();
-    void DeleteCameraThread();
+    bool StartIPCameraThread();
+    void DeleteIPCameraThread();
+
+    void OnLWIRCamera(wxCommandEvent&);
+    bool StartLWIRCameraCapture(HANDLE handle);
+    bool StartLWIRCameraThread();
+    void DeleteLWIRCameraThread();
+    void OnLWIRCameraFrame(wxThreadEvent& evt);
 
     void OnIPCamera(wxCommandEvent&);
+    
     void OnClear(wxCommandEvent&);
-
     void OnStreamInfo(wxCommandEvent&);
-
-
     void OnCameraFrame(wxThreadEvent& evt);
     void OnCameraEmpty(wxThreadEvent&);
     void OnCameraException(wxThreadEvent& evt);

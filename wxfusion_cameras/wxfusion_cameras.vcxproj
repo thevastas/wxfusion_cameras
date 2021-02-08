@@ -27,6 +27,7 @@
     <ClInclude Include="src\App.h" />
     <ClInclude Include="src\MainWindow.h" />
     <ClInclude Include="src\id.h" />
+    <ClInclude Include="src\ThermalCam.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\bmpfromocvpanel.cpp" />
@@ -35,6 +36,7 @@
     <ClCompile Include="src\ControlPanel.cpp" />
     <ClCompile Include="src\App.cpp" />
     <ClCompile Include="src\MainWindow.cpp" />
+    <ClCompile Include="src\ThermalCam.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -136,13 +138,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CRT_SECURE_NO_WARNINGS;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\local\boost_1_75_0\;D:\opencv4.5\build\include;$(WXWIN)\include\msvc;C:\wxwidgets\lib\vc_x64_lib;$(wxIncSubDir);$(SolutionDir)lib;$(WXWIN)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\local\boost_1_75_0\;D:\opencv4.5\build\include;$(WXWIN)\include\msvc;C:\wxwidgets\lib\vc_x64_lib;$(wxIncSubDir);$(SolutionDir)lib\;$(WXWIN)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib;D:\opencv4.5\build\x64\vc15\lib;$(WXWIN)\lib\vc_x64_lib;C:\local\boost_1_75_0\libs;C:\local\boost_1_75_0\lib64-msvc-14.2;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_world450d.lib;wxmsw31ud_core.lib;wxbase31ud.lib;wxtiffd.lib;wxjpegd.lib;wxpngd.lib;wxzlibd.lib;wxregexud.lib;wxexpatd.lib;kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;shlwapi.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;version.lib;wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\;D:\opencv4.5\build\x64\vc15\lib;$(WXWIN)\lib\vc_x64_lib;C:\local\boost_1_75_0\libs;C:\local\boost_1_75_0\lib64-msvc-14.2;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_world450d.lib;wxmsw31ud_core.lib;wxbase31ud.lib;wxtiffd.lib;wxjpegd.lib;wxpngd.lib;wxzlibd.lib;wxregexud.lib;wxexpatd.lib;kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;shlwapi.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;version.lib;wininet.lib;DALProxy640USB_x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>XCOPY "$(SolutionDir)"\lib\*.DLL "$(TargetDir)" /D /K /Y</Command>
