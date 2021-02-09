@@ -57,13 +57,13 @@ void ThermalCam::Setup(HANDLE handle) {
 	}
 
 	
-		if (Proxy640USB_SetShutterLessProcessing(handle, 1) == eProxy640USBSuccess) {
-			LOG(INFO) << "THERMAL Successfully enabled camera's AGC mode";
-		}
-		else {
-			LOG(ERROR) << Proxy640USB_GetErrorString(Proxy640USB_SetShutterLessProcessing(handle, 1));
-			return;//TODO error handling
-		}
+	if (Proxy640USB_SetShutterLessProcessing(handle, 1) == eProxy640USBSuccess) {
+		LOG(INFO) << "THERMAL Successfully enabled camera's AGC mode";
+	}
+	else {
+		LOG(ERROR) << Proxy640USB_GetErrorString(Proxy640USB_SetShutterLessProcessing(handle, 1));
+		return;//TODO error handling
+	}
 }
 
 cv::Mat ThermalCam::GetFrame(HANDLE handle) {

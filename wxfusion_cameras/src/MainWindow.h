@@ -55,6 +55,7 @@ public:
     void OnRFPointerOff(wxCommandEvent& event);
     // camera functions
     void OnConnectZoom(wxCommandEvent& event);
+    void InitializeCameras(wxCommandEvent& event);
     // options functions
     ThermalCam lwir;
 private:
@@ -94,6 +95,8 @@ private:
         bool useMJPEG = false);
     bool StartIPCameraThread();
     void DeleteIPCameraThread();
+
+    
 
     void OnLWIRCamera(wxCommandEvent&);
     bool StartLWIRCameraCapture(HANDLE handle);

@@ -18,6 +18,7 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     EVT_MENU(window::id::RFPOION, MainWindow::OnRFPointerOn)
     EVT_MENU(window::id::RFPOIOFF, MainWindow::OnRFPointerOff)
     EVT_MENU(window::id::RFMEASURE, MainWindow::OnRFMeasure)
+    EVT_MENU(window::id::CAMERAINIT, MainWindow::InitializeCameras)
     EVT_MENU(window::id::ENABLEZOOMCAMERA, MainWindow::OnIPCamera)
     EVT_MENU(window::id::ENABLELWIRCAMERA, MainWindow::OnLWIRCamera)
     EVT_MENU(window::id::THERMALPOI, MainWindow::OnThermalPoi)
@@ -144,7 +145,7 @@ public:
 
 protected:
     wxEvtHandler* m_eventSink{ nullptr };
-    HANDLE m_lwircamera{ nullptr };
+    HANDLE m_lwircamera { nullptr };
 
     ExitCode Entry() override;
 };
@@ -155,7 +156,7 @@ LWIRCameraThread::LWIRCameraThread(wxEvtHandler* eventSink, HANDLE handle)
 {
     
     wxASSERT(m_eventSink);
-    wxASSERT(m_lwircamera);
+    //wxASSERT(m_lwircamera);
 }
 
 wxThread::ExitCode LWIRCameraThread::Entry()
@@ -264,6 +265,7 @@ MainWindow::MainWindow(wxWindow* parent,
     // camera MENU
     wxMenu* cameraMenu = new wxMenu();
     menuBar->Append(cameraMenu, _("&Camera"));
+    cameraMenu->Append(window::id::CAMERAINIT, "Initialize cameras");
     cameraMenu->Append(window::id::ENABLEZOOMCAMERA, "Enable zoom camera");
     cameraMenu->Append(window::id::ENABLELWIRCAMERA, "Enable LWIR camera");
 
@@ -465,17 +467,26 @@ bool MainWindow::StartIPCameraCapture(const wxString& address, const wxSize& res
     return true;
 }
 
+void MainWindow::InitializeCameras(wxCommandEvent& event)
+{
+    m_lwirhandle = lwir.Init();
+    if (!Proxy640USB_IsConnectToModule(m_lwirhandle) == eProxy640USBSuccess)
+    {
+        wxLogError("Could not connect to the LWIR camera.");
+    }
+    
+    lwir.Setup(m_lwirhandle);
+}
+
 bool MainWindow::StartLWIRCameraCapture(HANDLE handle)
 {
     Clear();
 
-    if (!Proxy640USB_IsConnectToModule(handle) == eProxy640USBSuccess)
-    {
-        wxLogError("Could not connect to the LWIR camera.");
-        return false;
-    }
-
-    lwir.Setup(handle);
+    //if (!Proxy640USB_IsConnectToModule(m_lwirhandle) == eProxy640USBSuccess)
+    //{
+    //    wxLogError("Could not connect to the LWIR camera.");
+    //    return false;
+    //}
 
     if (!StartLWIRCameraThread())
     {
@@ -490,6 +501,7 @@ bool MainWindow::StartLWIRCameraCapture(HANDLE handle)
 bool MainWindow::StartLWIRCameraThread()
 {
     DeleteLWIRCameraThread();
+    //DeleteIPCameraThread();
 
     m_lwircameraThread = new LWIRCameraThread(this, m_lwirhandle);
     if (m_lwircameraThread->Run() != wxTHREAD_NO_ERROR)
@@ -507,6 +519,7 @@ bool MainWindow::StartLWIRCameraThread()
 
 bool MainWindow::StartIPCameraThread()
 {
+    //DeleteLWIRCameraThread();
     DeleteIPCameraThread();
 
     m_cameraThread = new CameraThread(this, m_videoCapture);
@@ -555,11 +568,11 @@ void MainWindow::OnIPCamera(wxCommandEvent&)
 
 void MainWindow::OnLWIRCamera(wxCommandEvent&)
 {
-    m_lwirhandle = lwir.Init();
+    
     //static wxString address = "rtsp://192.168.30.168/main";
     if (StartLWIRCameraCapture(m_lwirhandle))
     {
-        m_lwirhandle = lwir.Init();
+        //m_lwirhandle = lwir.Init();
         m_mode = LWIRCamera;
         //m_propertiesButton->Enable();
         //optionsMenu->Enable(window::id::STREAMINFO, 1);
