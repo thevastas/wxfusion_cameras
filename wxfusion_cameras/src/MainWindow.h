@@ -4,6 +4,7 @@
 #include "wx/artprov.h"
 #include "id.h"
 #include "ThermalCam.h"
+#include "NIRCam.h"
 //#include "bmpfromocvpanel.h"
 //#include "View.h"
 
@@ -18,6 +19,7 @@ namespace cv
 
 class CameraThread;
 class LWIRCameraThread;
+class NIRCameraThread;
 
 class MainWindow: public wxFrame
 {
@@ -58,6 +60,7 @@ public:
     void InitializeCameras(wxCommandEvent& event);
     // options functions
     ThermalCam lwir;
+    NIRCam nir;
 private:
     enum Mode //for the future cameras
     {
@@ -66,7 +69,8 @@ private:
         Video,
         WebCam,
         IPCamera,
-        LWIRCamera
+        LWIRCamera,
+        NIRCamera
     };
 
     Mode                     m_mode{ Empty };
@@ -79,7 +83,9 @@ private:
     LWIRCameraThread* m_lwircameraThread{ nullptr };
     HANDLE m_lwirhandle;
     
-    
+    NIRCameraThread* m_nircameraThread{ nullptr };
+    std::shared_ptr<peak::core::DataStream> m_dataStream{ nullptr };
+
     wxBitmapFromOpenCVPanel* m_bitmapPanel;
     wxSlider* m_videoSlider;
     wxButton* m_propertiesButton;
@@ -95,8 +101,8 @@ private:
         bool useMJPEG = false);
     bool StartIPCameraThread();
     void DeleteIPCameraThread();
-
-    
+    void OnIPCamera(wxCommandEvent&);
+    void OnCameraFrame(wxThreadEvent& evt);
 
     void OnLWIRCamera(wxCommandEvent&);
     bool StartLWIRCameraCapture(HANDLE handle);
@@ -104,11 +110,15 @@ private:
     void DeleteLWIRCameraThread();
     void OnLWIRCameraFrame(wxThreadEvent& evt);
 
-    void OnIPCamera(wxCommandEvent&);
+    void OnNIRCamera(wxCommandEvent&);
+    bool StartNIRCameraCapture();
+    bool StartNIRCameraThread();
+    void DeleteNIRCameraThread();
+    void OnNIRCameraFrame(wxThreadEvent& evt);
     
     void OnClear(wxCommandEvent&);
     void OnStreamInfo(wxCommandEvent&);
-    void OnCameraFrame(wxThreadEvent& evt);
+    
     void OnCameraEmpty(wxThreadEvent&);
     void OnCameraException(wxThreadEvent& evt);
 
