@@ -633,14 +633,16 @@ void MainWindow::DeleteIPCameraThread()
 
 void MainWindow::InitializeCameras(wxCommandEvent& event)
 {
+    m_logpanel->m_logtext->AppendText("Initializing cameras...\n");
     m_dataStream=nir.OpenDevice();
     m_lwirhandle = lwir.Init();
     if (!Proxy640USB_IsConnectToModule(m_lwirhandle) == eProxy640USBSuccess)
     {
-        wxLogError("Could not connect to the LWIR camera.");
+        m_logpanel->m_logtext->AppendText("Could not connect to the LWIR camera.\n");
     }
     
     lwir.Setup(m_lwirhandle);
+    m_logpanel->m_logtext->AppendText("Cameras initialized\n");
 }
 
 // LWIR CAMERA
@@ -668,7 +670,7 @@ bool MainWindow::StartLWIRCameraThread()
     {
         delete m_lwircameraThread;
         m_lwircameraThread = nullptr;
-        wxLogError("Could not create the thread needed to retrieve the images from a camera.");
+        m_logpanel->m_logtext->AppendText("Could not create the thread needed to retrieve the images from a camera.\n");
         return false;
     }
 
@@ -742,7 +744,7 @@ bool MainWindow::StartNIRCameraThread() {
     {
         delete m_nircameraThread;
         m_nircameraThread = nullptr;
-        wxLogError("Could not create the thread needed to retrieve the images from a camera.");
+        m_logpanel->m_logtext->AppendText("Could not create the thread needed to retrieve the images from a camera.\n");
         return false;
     }
 

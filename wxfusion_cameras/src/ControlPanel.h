@@ -75,6 +75,8 @@ public:
 	void OnFusionStream(wxCommandEvent& event);
 	void OnPip(wxCommandEvent& event);
 
+	
+	
 	wxStaticText* m_textstream;
 	wxStaticText* m_textpip;
 

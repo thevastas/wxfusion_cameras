@@ -34,6 +34,7 @@
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
 #include "opencv2/imgproc/imgproc.hpp"
+//#include "MainWindow.h"
 
  /*!
   * \brief The AutoFeaturesManager class controls ExposureAuto, GainAuto and BalanceWhiteAuto and all corresponding settings.
@@ -672,6 +673,8 @@ private:
 class NIRCam
 {
 public:
+    //wxPanel* m_parent;
+    //MainWindow* comm = (MainWindow*)m_parent->GetParent();
     std::shared_ptr<peak::core::Device> m_device;
     std::shared_ptr<peak::core::DataStream> m_dataStream = nullptr;
     std::shared_ptr<peak::core::NodeMap> m_nodemapRemoteDevice;

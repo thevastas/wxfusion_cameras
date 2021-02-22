@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "DALProxy640USB.h"
 #include "DALProxy640USBDef.h"
+//#include "MainWindow.h"
 
 
 class ThermalCam
@@ -15,6 +16,8 @@ private:
 	short* tableoffset = (short*)malloc(614400);
 	int i;
 public:
+
+
 	HANDLE handle = NULL;
 	HANDLE Init();
 	void Setup(HANDLE handle);
@@ -22,6 +25,6 @@ public:
 	void Close(HANDLE handle);
 	unsigned char offset = '1';
 	unsigned char gain = '0';
-
+	wxPanel* m_parent;
 };
 

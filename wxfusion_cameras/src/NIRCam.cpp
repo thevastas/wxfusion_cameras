@@ -1,4 +1,5 @@
 #include "NIRCam.h"
+#include "Common.h"
 #include <peak_ipl/peak_ipl.hpp>
 #include <peak/converters/peak_buffer_converter_ipl.hpp>
 #include <peak/peak.hpp>
@@ -1489,7 +1490,8 @@ std::shared_ptr<peak::core::DataStream> NIRCam::OpenDevice()
         if (deviceManager.Devices().at(0)->IsOpenable())
         {
             m_device = deviceManager.Devices().at(0)->OpenDevice(peak::core::DeviceAccessType::Control);
-
+            LOG(INFO) << "[NIR] camera was successfully opened";
+            //comm->m_logpanel->m_logtext->AppendText("[NIR] camera was successfully opened\n");
             // stop after the first opened device
         }
         else
@@ -1555,6 +1557,9 @@ std::shared_ptr<peak::core::DataStream> NIRCam::OpenDevice()
     m_autoFeaturesManager.SetNodemapRemoteDevice(m_nodemapRemoteDevice);
     m_autoFeaturesManager.SetExposureAutoMode(AutoFeaturesManager::ExposureAutoMode::Continuous);
     m_autoFeaturesManager.SetGainAutoMode(AutoFeaturesManager::GainAutoMode::Once);
+
+    LOG(INFO) << "[NIR] camera was successfully set up";
+    //comm->m_logpanel->m_logtext->AppendText("[NIR] camera was successfully set up\n");
 
     return m_dataStream;
 }

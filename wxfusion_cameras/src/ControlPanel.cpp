@@ -179,7 +179,6 @@ void VideoSetPanel::OnFusionStream(wxCommandEvent& WXUNUSED(event))
 void VideoSetPanel::OnPip(wxCommandEvent& WXUNUSED(event))
 {
     MainWindow* comm = (MainWindow*)m_parent->GetParent();
-
     wxString m_pipchoice = m_pip->GetString(m_pip->GetSelection());
     if (m_pipchoice == wxT("Fusion")) {
         comm->m_fusionratiopanel->m_fusionslider->Enable();
