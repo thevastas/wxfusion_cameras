@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Fusion.h" />
     <ClInclude Include="src\NIRCam.h" />
     <ClInclude Include="src\bmpfromocvpanel.h" />
     <ClInclude Include="src\convertmattowxbmp.h" />
@@ -31,6 +32,7 @@
     <ClInclude Include="src\ThermalCam.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Fusion.cpp" />
     <ClCompile Include="src\NIRCam.cpp" />
     <ClCompile Include="src\bmpfromocvpanel.cpp" />
     <ClCompile Include="src\convertmattowxbmp.cpp" />

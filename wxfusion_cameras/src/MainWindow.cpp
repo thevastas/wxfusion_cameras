@@ -16,6 +16,7 @@
 #include "bmpfromocvpanel.h"
 #include "convertmattowxbmp.h"
 #include "MainWindow.h"
+//#include "Fusion.h"
 
 BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     EVT_MENU(wxID_EXIT, MainWindow::OnQuit)
@@ -26,6 +27,7 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     EVT_MENU(window::id::ENABLEZOOMCAMERA, MainWindow::OnIPCamera)
     EVT_MENU(window::id::ENABLELWIRCAMERA, MainWindow::OnLWIRCamera)
     EVT_MENU(window::id::ENABLENIRCAMERA, MainWindow::OnNIRCamera)
+    EVT_MENU(window::id::ENABLEFUSIONCAMERA, MainWindow::OnFusionCamera)
     EVT_MENU(window::id::THERMALPOI, MainWindow::OnThermalPoi)
     EVT_MENU(window::id::NIRPOI, MainWindow::OnNirPoi)
     EVT_MENU(window::id::STREAMINFO, MainWindow::OnStreamInfo)
@@ -50,6 +52,11 @@ wxDEFINE_EVENT(wxEVT_LWIRCAMERA_EXCEPTION, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_NIRCAMERA_FRAME, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_NIRCAMERA_EMPTY, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_NIRCAMERA_EXCEPTION, wxThreadEvent);
+
+// The same for fusion mode
+wxDEFINE_EVENT(wxEVT_FUSIONCAMERA_FRAME, wxThreadEvent);
+wxDEFINE_EVENT(wxEVT_FUSIONCAMERA_EMPTY, wxThreadEvent);
+wxDEFINE_EVENT(wxEVT_FUSIONCAMERA_EXCEPTION, wxThreadEvent);
 
 
 
@@ -323,6 +330,100 @@ wxThread::ExitCode NIRCameraThread::Entry()
 
 
 //--------------------------------------------------------
+
+class FusionCameraThread : public wxThread
+{
+public:
+    struct CameraFrame
+    {
+        cv::Mat matNirBitmap;
+        cv::Mat matLwirBitmap;
+        long    timeGet{ 0 };
+    };
+    NIRCam nirt;
+    ThermalCam lwirt;
+    FusionCameraThread(wxEvtHandler* eventSink, std::shared_ptr<peak::core::DataStream> dataStream, HANDLE handle);
+
+protected:
+    wxEvtHandler* m_eventSink{ nullptr };
+    std::shared_ptr<peak::core::DataStream> m_dataStream{ nullptr };
+    HANDLE m_lwircamera{ nullptr };
+    ExitCode Entry() override;
+};
+
+FusionCameraThread::FusionCameraThread(wxEvtHandler* eventSink, std::shared_ptr<peak::core::DataStream> dataStream, HANDLE handle)
+    : wxThread(wxTHREAD_JOINABLE),
+    m_eventSink(eventSink), m_dataStream(dataStream)
+{
+
+    //wxASSERT(m_eventSink);
+    //wxASSERT(m_lwircamera);
+}
+
+wxThread::ExitCode FusionCameraThread::Entry()
+{
+    wxStopWatch  stopWatch;
+
+    while (!TestDestroy())
+    {
+        CameraFrame* frame = nullptr;
+
+        try
+        {
+            frame = new CameraFrame;
+            stopWatch.Start();
+            frame->matNirBitmap = nirt.GetFrame(true, m_dataStream);
+            frame->matLwirBitmap = lwirt.GetFrame(m_lwircamera);
+
+            frame->timeGet = stopWatch.Time(); //measure retrieval time
+
+            //WARNING
+            if (!frame->matNirBitmap.empty() || !frame->matLwirBitmap.empty()) //if successful, set payload
+            {
+                wxThreadEvent* evt = new wxThreadEvent(wxEVT_FUSIONCAMERA_FRAME);
+
+                evt->SetPayload(frame);
+                m_eventSink->QueueEvent(evt);
+            }
+            else // connection to camera lost
+            {
+                m_eventSink->QueueEvent(new wxThreadEvent(wxEVT_FUSIONCAMERA_EMPTY));
+                wxDELETE(frame);
+                break;
+            }
+            //WARNING
+        }
+        catch (const std::exception& e)
+        {
+            wxThreadEvent* evt = new wxThreadEvent(wxEVT_FUSIONCAMERA_EXCEPTION);
+
+            wxDELETE(frame);
+            evt->SetString(e.what());
+            m_eventSink->QueueEvent(evt);
+            break;
+        }
+        catch (...)
+        {
+            wxThreadEvent* evt = new wxThreadEvent(wxEVT_FUSIONCAMERA_EXCEPTION);
+
+            wxDELETE(frame);
+            evt->SetString("Unknown exception");
+            m_eventSink->QueueEvent(evt);
+            break;
+
+        }
+
+
+    }
+
+    return static_cast<wxThread::ExitCode>(nullptr);
+}
+
+
+
+
+
+//--------------------------------------------------------
 MainWindow::MainWindow(wxWindow* parent,
     wxWindowID id,
     const wxString& title,
@@ -333,10 +434,9 @@ MainWindow::MainWindow(wxWindow* parent,
 
     wxFrame(parent, id, title, pos, size, style, name)
 {
-
     //cv::setBreakOnError(true);
     //warning
-
+    Fusion fusiont;
     //main panel
     m_parent = new wxPanel(this, wxID_ANY);
 
@@ -367,6 +467,7 @@ MainWindow::MainWindow(wxWindow* parent,
     cameraMenu->Append(window::id::ENABLEZOOMCAMERA, "Enable zoom camera");
     cameraMenu->Append(window::id::ENABLELWIRCAMERA, "Enable LWIR camera");
     cameraMenu->Append(window::id::ENABLENIRCAMERA, "Enable NIR camera");
+    cameraMenu->Append(window::id::ENABLEFUSIONCAMERA, "Enable fusion camera");
 
     // VIEW MENU
     wxMenu* viewMenu = new wxMenu();
@@ -447,6 +548,9 @@ MainWindow::MainWindow(wxWindow* parent,
     Bind(wxEVT_NIRCAMERA_FRAME, &MainWindow::OnNIRCameraFrame, this);
     Bind(wxEVT_NIRCAMERA_EMPTY, &MainWindow::OnCameraEmpty, this);
     Bind(wxEVT_NIRCAMERA_EXCEPTION, &MainWindow::OnCameraException, this);
+    Bind(wxEVT_FUSIONCAMERA_FRAME, &MainWindow::OnFusionCameraFrame, this);
+    Bind(wxEVT_FUSIONCAMERA_EMPTY, &MainWindow::OnCameraEmpty, this);
+    Bind(wxEVT_FUSIONCAMERA_EXCEPTION, &MainWindow::OnCameraException, this);
 }
 
 
@@ -642,6 +746,7 @@ void MainWindow::InitializeCameras(wxCommandEvent& event)
     }
     
     lwir.Setup(m_lwirhandle);
+    fusion.init(nir.GetFrame(true,m_dataStream), lwir.GetFrame(m_lwirhandle), 0, 0, 0.5, false);
     m_logpanel->m_logtext->AppendText("Cameras initialized\n");
 }
 
@@ -786,6 +891,76 @@ void MainWindow::OnNIRCameraFrame(wxThreadEvent& evt) {
 
     delete frame;
 }
+
+// FUSION
+
+bool MainWindow::StartFusionCameraCapture() {
+    Clear();
+
+    if (!StartFusionCameraThread())
+    {
+        Clear();
+        return false;
+    }
+
+    return true;
+}
+bool MainWindow::StartFusionCameraThread() {
+    DeleteFusionCameraThread();
+  
+    m_fusioncameraThread = new FusionCameraThread(this, m_dataStream, m_lwirhandle);
+    if (m_fusioncameraThread->Run() != wxTHREAD_NO_ERROR)
+    {
+        delete m_fusioncameraThread;
+        m_fusioncameraThread = nullptr;
+        m_logpanel->m_logtext->AppendText("Could not create the thread needed to retrieve the images from a NIR or LWIR camera.\n");
+        return false;
+    }
+
+    return true;
+}
+void MainWindow::DeleteFusionCameraThread() {
+    if (m_fusioncameraThread)
+    {
+        m_fusioncameraThread->Delete();
+        delete m_fusioncameraThread;
+        m_fusioncameraThread = nullptr;
+    }
+}
+void MainWindow::OnFusionCamera(wxCommandEvent&) {
+    
+    if (StartFusionCameraCapture())
+    {
+        m_mode = FuseNIRLWIR;
+    }
+}
+void MainWindow::OnFusionCameraFrame(wxThreadEvent& evt) {
+    FusionCameraThread::CameraFrame* frame = evt.GetPayload<FusionCameraThread::CameraFrame*>();
+
+    // After deleting the camera thread we may still get a stray frame
+    // from yet unprocessed event, just silently drop it.
+    if (m_mode != FuseNIRLWIR)
+    {
+        delete frame;
+        return;
+    }
+
+    long     timeConvert = 0;
+
+    fusion.m_fused_img = fusion.fuse_offset(frame->matNirBitmap, frame->matLwirBitmap);
+    //fusion.m_fused_img
+
+    wxBitmap bitmap = ConvertMatToBitmap(fusion.m_fused_img, timeConvert);
+
+    if (bitmap.IsOk())
+        m_bitmapPanel->SetBitmap(bitmap, frame->timeGet, timeConvert);
+    else
+        m_bitmapPanel->SetBitmap(wxBitmap(), 0, 0);
+
+    delete frame;
+}
+
+
 
 // ETC
 

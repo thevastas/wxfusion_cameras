@@ -5,6 +5,7 @@
 #include "id.h"
 #include "ThermalCam.h"
 #include "NIRCam.h"
+#include "Fusion.h"
 //#include "bmpfromocvpanel.h"
 //#include "View.h"
 
@@ -20,6 +21,7 @@ namespace cv
 class CameraThread;
 class LWIRCameraThread;
 class NIRCameraThread;
+class FusionCameraThread;
 
 class MainWindow: public wxFrame
 {
@@ -61,6 +63,7 @@ public:
     // options functions
     ThermalCam lwir;
     NIRCam nir;
+    Fusion fusion;
 private:
     enum Mode //for the future cameras
     {
@@ -70,7 +73,8 @@ private:
         WebCam,
         IPCamera,
         LWIRCamera,
-        NIRCamera
+        NIRCamera,
+        FuseNIRLWIR
     };
 
     Mode                     m_mode{ Empty };
@@ -85,6 +89,8 @@ private:
     
     NIRCameraThread* m_nircameraThread{ nullptr };
     std::shared_ptr<peak::core::DataStream> m_dataStream{ nullptr };
+
+    FusionCameraThread* m_fusioncameraThread{ nullptr };
 
     wxBitmapFromOpenCVPanel* m_bitmapPanel;
     wxSlider* m_videoSlider;
@@ -115,6 +121,13 @@ private:
     bool StartNIRCameraThread();
     void DeleteNIRCameraThread();
     void OnNIRCameraFrame(wxThreadEvent& evt);
+
+    void OnFusionCamera(wxCommandEvent&);
+    bool StartFusionCameraCapture();
+    bool StartFusionCameraThread();
+    void DeleteFusionCameraThread();
+    void OnFusionCameraFrame(wxThreadEvent& evt);
+
     
     void OnClear(wxCommandEvent&);
     void OnStreamInfo(wxCommandEvent&);
