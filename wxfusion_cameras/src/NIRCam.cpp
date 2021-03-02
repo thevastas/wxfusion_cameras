@@ -1487,9 +1487,9 @@ std::shared_ptr<peak::core::DataStream> NIRCam::OpenDevice()
             peak::Library::Close();
             return 0;
         }
-        if (deviceManager.Devices().at(0)->IsOpenable())
+        if (deviceManager.Devices().at(1)->IsOpenable())
         {
-            m_device = deviceManager.Devices().at(0)->OpenDevice(peak::core::DeviceAccessType::Control);
+            m_device = deviceManager.Devices().at(1)->OpenDevice(peak::core::DeviceAccessType::Control);
             LOG(INFO) << "[NIR] camera was successfully opened";
             //comm->m_logpanel->m_logtext->AppendText("[NIR] camera was successfully opened\n");
             // stop after the first opened device
