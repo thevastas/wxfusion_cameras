@@ -38,56 +38,70 @@ unsigned char PanTilt::Checksum(unsigned char array[7]) {
 }
 
 
-void PanTilt::Up() {
-	unsigned char input[7]{ 0xFF,0x01, 0x00, 0x08, 0x00, 0x20, 0x00 };
+void PanTilt::Up(int speed) {
+	unsigned char input[7]{ 0xFF,0x01, 0x00, 0x08, 0x00, 0x3F, 0x00 };
+	input[5] = m_speed[speed];
 	input[6] = Checksum(input);
 	asio::write(PanTilt::serial, asio::buffer(input));
 	return;
 }
-void PanTilt::Down() {
-	unsigned char input[7]{ 0xFF,0x01, 0x00, 0x10, 0x00, 0x20, 0x31 };
-	input[6] = Checksum(input);
-	asio::write(PanTilt::serial, asio::buffer(input));
-	return;
-}
-
-void PanTilt::Left() {
-	unsigned char input[7]{ 0xFF,0x01, 0x00, 0x04, 0x20, 0x00, 0x25 };
+void PanTilt::Down(int speed) {
+	unsigned char input[7]{ 0xFF,0x01, 0x00, 0x10, 0x00, 0x04, 0x00 };
+	input[5] = m_speed[speed];
 	input[6] = Checksum(input);
 	asio::write(PanTilt::serial, asio::buffer(input));
 	return;
 }
 
-void PanTilt::Right() {
-	unsigned char input[7]{ 0xFF,0x01, 0x00, 0x02, 0x20, 0x00, 0x23 };
+void PanTilt::Left(int speed) {
+	unsigned char input[7]{ 0xFF,0x01, 0x00, 0x04, 0x16, 0x00, 0x00 };
+	input[4] = m_speed[speed];
 	input[6] = Checksum(input);
 	asio::write(PanTilt::serial, asio::buffer(input));
 	return;
 }
 
-void PanTilt::UpRight() {
-	unsigned char input[7]{ 0xFF,0x01, 0x00, 0x0A, 0x20, 0x20, 0x4B };
+void PanTilt::Right(int speed) {
+	unsigned char input[7]{ 0xFF,0x01, 0x00, 0x02, 0x2F, 0x00, 0x00 };
+	input[4] = m_speed[speed];
 	input[6] = Checksum(input);
 	asio::write(PanTilt::serial, asio::buffer(input));
 	return;
 }
 
-void PanTilt::DownRight() {
-	unsigned char input[7]{ 0xFF,0x01, 0x00, 0x12, 0x20, 0x20, 0x53 };
+void PanTilt::UpRight(int speed) {
+	unsigned char input[7]{ 0xFF,0x01, 0x00, 0x0A, 0x20, 0x20, 0x00 };
+	input[4] = m_speed[speed];
+	input[5] = m_speed[speed];
+	input[6] = Checksum(input);
+
+	asio::write(PanTilt::serial, asio::buffer(input));
+	return;
+}
+
+void PanTilt::DownRight(int speed) {
+	unsigned char input[7]{ 0xFF,0x01, 0x00, 0x12, 0x20, 0x20, 0x00 };
+	input[4] = m_speed[speed];
+	input[5] = m_speed[speed];
 	input[6] = Checksum(input);
 	asio::write(PanTilt::serial, asio::buffer(input));
 	return;
 }
 
-void PanTilt::UpLeft() {
-	unsigned char input[7]{ 0xFF,0x01, 0x00, 0x0C, 0x20, 0x20, 0x4D };
+void PanTilt::UpLeft(int speed) {
+	unsigned char input[7]{ 0xFF,0x01, 0x00, 0x0C, 0x20, 0x20, 0x00 };
+	input[4] = m_speed[speed];
+	input[5] = m_speed[speed];
 	input[6] = Checksum(input);
 	asio::write(PanTilt::serial, asio::buffer(input));
 	return;
 }
 
-void PanTilt::DownLeft() {
-	unsigned char input[7]{ 0xFF,0x01, 0x00, 0x14, 0x20, 0x20, 0x55 };
+void PanTilt::DownLeft(int speed) {
+	unsigned char input[7]{ 0xFF,0x01, 0x00, 0x14, 0x20, 0x20, 0x00 };
+	
+	input[4] = m_speed[speed];
+	input[5] = m_speed[speed];
 	input[6] = Checksum(input);
 	asio::write(PanTilt::serial, asio::buffer(input));
 	return;

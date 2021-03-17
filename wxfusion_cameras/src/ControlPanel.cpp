@@ -279,7 +279,7 @@ LogPanel::LogPanel(wxPanel* parent)
 void PTZPanel::OnPTUp(wxMouseEvent& event)
 {
     PanTilt pt("COM5", 2400);
-    pt.Up();
+    pt.Up(m_ptzspeed->GetValue());
     event.Skip();
 }
 
@@ -287,14 +287,14 @@ void PTZPanel::OnPTUp(wxMouseEvent& event)
 void PTZPanel::OnPTDown(wxMouseEvent& event)
 {
     PanTilt pt("COM5", 2400);
-    pt.Down();
+    pt.Down(m_ptzspeed->GetValue());
     event.Skip();
 }
 
 void PTZPanel::OnPTLeft(wxMouseEvent& event)
 {
     PanTilt pt("COM5", 2400);
-    pt.Left();
+    pt.Left(m_ptzspeed->GetValue());
     event.Skip();
 }
 
@@ -302,35 +302,35 @@ void PTZPanel::OnPTLeft(wxMouseEvent& event)
 void PTZPanel::OnPTRight(wxMouseEvent& event)
 {
     PanTilt pt("COM5", 2400);
-    pt.Right();
+    pt.Right(m_ptzspeed->GetValue());
     event.Skip();
 }
 
 void PTZPanel::OnPTUpRight(wxMouseEvent& event)
 {
     PanTilt pt("COM5", 2400);
-    pt.UpRight();
+    pt.UpRight(m_ptzspeed->GetValue());
     event.Skip();
 }
 
 void PTZPanel::OnPTDownRight(wxMouseEvent& event)
 {
     PanTilt pt("COM5", 2400);
-    pt.DownRight();
+    pt.DownRight(m_ptzspeed->GetValue());
     event.Skip();
 }
 
 void PTZPanel::OnPTUpLeft(wxMouseEvent& event)
 {
     PanTilt pt("COM5", 2400);
-    pt.UpLeft();
+    pt.UpLeft(m_ptzspeed->GetValue());
     event.Skip();
 }
 
 void PTZPanel::OnPTDownLeft(wxMouseEvent& event)
 {
     PanTilt pt("COM5", 2400);
-    pt.DownLeft();
+    pt.DownLeft(m_ptzspeed->GetValue());
     event.Skip();
 }
 

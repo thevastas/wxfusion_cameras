@@ -13,6 +13,9 @@ class PanTilt : public wxFrame
 private:
 	boost::asio::io_service io;
 	boost::asio::serial_port serial;
+	unsigned char m_speed[6]{ 0x00, 0x04, 0x11, 0x20, 0x2F, 0x3F };
+
+	//Speed                     m_speed{ Empty };
 public:
 	PanTilt(std::string port, unsigned int baud_rate)
 		: io(), serial(io, port)
@@ -28,13 +31,13 @@ public:
 	//void Init(boost::asio::io_service& io);
 	void Close();
 	unsigned char Checksum(unsigned char array[6]);
-	void Up();
-	void Down();
-	void Left();
-	void Right();
-	void UpLeft();
-	void UpRight();
-	void DownLeft();
-	void DownRight();
+	void Up(int speed);
+	void Down(int speed);
+	void Left(int speed);
+	void Right(int speed);
+	void UpLeft(int speed);
+	void UpRight(int speed);
+	void DownLeft(int speed);
+	void DownRight(int speed);
 	void Stop();
 };
