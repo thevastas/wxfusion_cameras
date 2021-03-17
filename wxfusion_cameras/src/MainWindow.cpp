@@ -16,6 +16,8 @@
 #include "bmpfromocvpanel.h"
 #include "convertmattowxbmp.h"
 #include "MainWindow.h"
+#include "Rangefinder.h"
+#include "PanTilt.h"
 //#include "Fusion.h"
 
 BEGIN_EVENT_TABLE(MainWindow, wxFrame)
@@ -57,7 +59,6 @@ wxDEFINE_EVENT(wxEVT_NIRCAMERA_EXCEPTION, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_FUSIONCAMERA_FRAME, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_FUSIONCAMERA_EMPTY, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_FUSIONCAMERA_EXCEPTION, wxThreadEvent);
-
 
 
 //
@@ -434,6 +435,7 @@ MainWindow::MainWindow(wxWindow* parent,
 
     wxFrame(parent, id, title, pos, size, style, name)
 {
+
     //cv::setBreakOnError(true);
     //warning
     Fusion fusiont;
@@ -533,8 +535,8 @@ MainWindow::MainWindow(wxWindow* parent,
 
     //panel_controls->SetSizerAndFit(sizer_buttons);
 
-    SetMinClientSize(FromDIP(wxSize(600, 400)));
-    SetSize(FromDIP(wxSize(800, 600)));
+    SetMinClientSize(FromDIP(wxSize(1000, 700)));
+    SetSize(FromDIP(wxSize(1000, 700)));
 
     m_parent->SetSizerAndFit(sizer);
 
@@ -546,11 +548,13 @@ MainWindow::MainWindow(wxWindow* parent,
     Bind(wxEVT_LWIRCAMERA_EMPTY, &MainWindow::OnCameraEmpty, this);
     Bind(wxEVT_LWIRCAMERA_EXCEPTION, &MainWindow::OnCameraException, this);
     Bind(wxEVT_NIRCAMERA_FRAME, &MainWindow::OnNIRCameraFrame, this);
-    Bind(wxEVT_NIRCAMERA_EMPTY, &MainWindow::OnCameraEmpty, this);
+    Bind(wxEVT_NIRCAMERA_EMPTY, &MainWindow::OnCameraEmpty, this);  
     Bind(wxEVT_NIRCAMERA_EXCEPTION, &MainWindow::OnCameraException, this);
     Bind(wxEVT_FUSIONCAMERA_FRAME, &MainWindow::OnFusionCameraFrame, this);
     Bind(wxEVT_FUSIONCAMERA_EMPTY, &MainWindow::OnCameraEmpty, this);
     Bind(wxEVT_FUSIONCAMERA_EXCEPTION, &MainWindow::OnCameraException, this);
+    Bind(wxEVT_KEY_DOWN, &MainWindow::OnKeyDown, this);
+    //Connect(wxEVT_KEY_DOWN, wxKeyEventHandler(MainWindow::OnKeyDown));
 }
 
 
@@ -579,19 +583,6 @@ void MainWindow::OnThermalPoi(wxCommandEvent& event)
 void MainWindow::OnCrosshair(wxCommandEvent& event)
 {
     wxMessageBox("Crosshair not implemented");
-};
-// rangefinder functions
-void MainWindow::OnRFMeasure(wxCommandEvent& event)
-{
-    wxMessageBox("Rangefinder measurement not implemented");
-};
-void MainWindow::OnRFPointerOn(wxCommandEvent& event)
-{
-    wxMessageBox("Rangefinder pointer ON not implemented");
-};
-void MainWindow::OnRFPointerOff(wxCommandEvent& event)
-{
-    wxMessageBox("Rangefinder pointer OFF not implemented");
 };
 
 wxBitmap MainWindow::ConvertMatToBitmap(const cv::Mat& matBitmap, long& timeConvert)
@@ -737,6 +728,10 @@ void MainWindow::DeleteIPCameraThread()
 
 void MainWindow::InitializeCameras(wxCommandEvent& event)
 {
+    DeleteIPCameraThread();
+    DeleteNIRCameraThread();
+    DeleteLWIRCameraThread();
+    DeleteFusionCameraThread();
     m_logpanel->m_logtext->AppendText("Initializing cameras...\n");
     m_dataStream=nir.OpenDevice();
     m_lwirhandle = lwir.Init();
@@ -768,7 +763,10 @@ bool MainWindow::StartLWIRCameraCapture(HANDLE handle)
 
 bool MainWindow::StartLWIRCameraThread()
 {
+    DeleteIPCameraThread();
+    DeleteNIRCameraThread();
     DeleteLWIRCameraThread();
+    DeleteFusionCameraThread();
 
     m_lwircameraThread = new LWIRCameraThread(this, m_lwirhandle);
     if (m_lwircameraThread->Run() != wxTHREAD_NO_ERROR)
@@ -842,8 +840,10 @@ bool MainWindow::StartNIRCameraCapture() {
     return true;
 }
 bool MainWindow::StartNIRCameraThread() {
+    DeleteIPCameraThread();
     DeleteNIRCameraThread();
-
+    DeleteLWIRCameraThread();
+    DeleteFusionCameraThread();
     m_nircameraThread = new NIRCameraThread(this, m_dataStream);
     if (m_nircameraThread->Run() != wxTHREAD_NO_ERROR)
     {
@@ -906,6 +906,9 @@ bool MainWindow::StartFusionCameraCapture() {
     return true;
 }
 bool MainWindow::StartFusionCameraThread() {
+    DeleteIPCameraThread();
+    DeleteNIRCameraThread();
+    DeleteLWIRCameraThread();
     DeleteFusionCameraThread();
   
     m_fusioncameraThread = new FusionCameraThread(this, m_dataStream, m_lwirhandle);
@@ -1042,5 +1045,58 @@ void MainWindow::OnCameraException(wxThreadEvent& evt)
 
 
 
+void MainWindow::OnRFPointerOn(wxCommandEvent& event)
+{
+    Rangefinder rangefinder("COM4", 19200);
+    rangefinder.PointerOn();
+    m_logpanel->m_logtext->AppendText("Pointer was turned ON \n");
+}
 
+void MainWindow::OnRFPointerOff(wxCommandEvent& event)
+{
+    Rangefinder rangefinder("COM4", 19200);
+    rangefinder.PointerOff();
+    m_logpanel->m_logtext->AppendText("Pointer was turned OFF \n");
+}
+
+void MainWindow::RFThread() {
+    Rangefinder rangefinder("COM4", 19200);
+    m_logpanel->m_logtext->AppendText("Measuring distance.. \n");
+    //m_logview->PrintLog("Measuring distance.. \n");
+    wxString measurement = wxString::Format(wxT("Distance: %.2f meters \n"), rangefinder.Measure());
+    m_logpanel->m_logtext->AppendText(measurement);
+}
+
+void MainWindow::OnRFMeasure(wxCommandEvent& event)
+{
+    Rangefinder rangefinder("COM4", 19200);
+    m_logpanel->m_logtext->AppendText("Measuring distance.. \n");
+    //m_logview->PrintLog("Measuring distance.. \n");
+    wxString measurement = wxString::Format(wxT("Distance: %.2f meters \n"), rangefinder.Measure());
+    m_logpanel->m_logtext->AppendText(measurement);
+}
+
+
+void MainWindow::OnKeyDown(wxKeyEvent& event) // TODO neveikia
+{
+
+    m_logpanel->m_logtext->AppendText("Key pressed \n");
+
+    switch (event.GetKeyCode())
+    {
+    case WXK_SPACE:
+        MainWindow::RFThread();
+        break;
+    case WXK_UP:
+        break;
+    case WXK_DOWN:
+        break;
+    case WXK_LEFT:
+        break;
+    case WXK_RIGHT:
+        break;
+    default:
+        event.Skip();
+    }
+}
 

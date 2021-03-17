@@ -48,6 +48,12 @@
     <ClInclude Include="src\Fusion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Rangefinder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PanTilt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\App.cpp">
@@ -75,6 +81,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Fusion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rangefinder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PanTilt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

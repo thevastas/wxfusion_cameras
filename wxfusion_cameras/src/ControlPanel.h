@@ -50,6 +50,15 @@ public:
 
 	void OnZoomIn(wxCommandEvent& event);
 	void OnZoomOut(wxCommandEvent& event);
+	void OnPTUp(wxMouseEvent& event);
+	void OnPTDown(wxMouseEvent& event);
+	void OnPTLeft(wxMouseEvent& event);
+	void OnPTRight(wxMouseEvent& event);
+	void OnPTUpLeft(wxMouseEvent& event);
+	void OnPTUpRight(wxMouseEvent& event);
+	void OnPTDownLeft(wxMouseEvent& event);
+	void OnPTDownRight(wxMouseEvent& event);
+	void OnPTStop(wxMouseEvent& event);
 
 };
 

@@ -57,13 +57,17 @@ public:
     void OnRFMeasure(wxCommandEvent& event);
     void OnRFPointerOn(wxCommandEvent& event);
     void OnRFPointerOff(wxCommandEvent& event);
+    void RFThread();
     // camera functions
     void OnConnectZoom(wxCommandEvent& event);
     void InitializeCameras(wxCommandEvent& event);
+    void OnKeyDown(wxKeyEvent& event);
     // options functions
     ThermalCam lwir;
     NIRCam nir;
     Fusion fusion;
+    // pan tilt
+
 private:
     enum Mode //for the future cameras
     {
