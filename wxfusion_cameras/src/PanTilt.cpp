@@ -112,3 +112,19 @@ void PanTilt::Stop() {
 	asio::write(PanTilt::serial, asio::buffer(input));
 	return;
 }
+
+void PanTilt::SetPreset(int pos) {
+	unsigned char input[7]{ 0xFF,0x01, 0x00, 0x03, 0x00, 0x01, 0x01 };
+	input[5] = pos;
+	input[6] = Checksum(input);
+	asio::write(PanTilt::serial, asio::buffer(input));
+	return;
+}
+
+void PanTilt::Preset(int pos) {
+	unsigned char input[7]{ 0xFF,0x01, 0x00, 0x07, 0x00, 0x01, 0x01 };
+	input[5] = pos;
+	input[6] = Checksum(input);
+	asio::write(PanTilt::serial, asio::buffer(input));
+	return;
+}

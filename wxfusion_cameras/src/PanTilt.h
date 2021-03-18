@@ -30,7 +30,7 @@ public:
 	//asio::io_service io;
 	//void Init(boost::asio::io_service& io);
 	void Close();
-	unsigned char Checksum(unsigned char array[6]);
+	unsigned char Checksum(unsigned char array[7]);
 	void Up(int speed);
 	void Down(int speed);
 	void Left(int speed);
@@ -40,4 +40,6 @@ public:
 	void DownLeft(int speed);
 	void DownRight(int speed);
 	void Stop();
+	void SetPreset(int pos);
+	void Preset(int pos);
 };

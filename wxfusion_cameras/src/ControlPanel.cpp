@@ -17,6 +17,7 @@ PTZPanel::PTZPanel(wxPanel* parent)
     int ptzbuttonoriginy = 10;
 
 
+
     m_upleft = new wxBitmapButton(this, window::id::BUPLEFT, wxBitmap(wxT("img/arrow_upleft.png"), wxBITMAP_TYPE_PNG), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy), wxSize(ptzbuttonsize, ptzbuttonsize));
     m_upleft->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(PTZPanel::OnPTUpLeft), NULL, this);
     m_upleft->Connect(wxEVT_LEFT_UP, wxMouseEventHandler(PTZPanel::OnPTStop), NULL, this);
@@ -77,24 +78,62 @@ PTZPanel::PTZPanel(wxPanel* parent)
 
     m_textspeed = new wxStaticText(this, -1, wxT("Speed"), wxPoint(150 + 20, ptzbuttonoriginy + 2 * (ptzbuttonsize + ptzbuttonspacing) + 6));
     m_textspeed->SetForegroundColour(wxColor(214, 214, 214));
-    
-    m_ptzspeed = new wxSpinCtrl(this, window::id::BPTZSPEED,
-        wxT("3"), wxPoint(230, ptzbuttonoriginy + 2*(ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize+20, ptzbuttonsize), wxSP_ARROW_KEYS,
-        1, 5, 1);
-    m_ptzspeed->SetBackgroundColour(wxColor(214, 214, 214));
-    
+
     m_textpos = new wxStaticText(this, -1, wxT("Position"), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy + 3.5 * (ptzbuttonsize + ptzbuttonspacing)));
     m_textpos->SetForegroundColour(wxColor(214, 214, 214));
 
-    m_pos1 = new wxButton(this, window::id::BPTZPOS1, wxT("1"), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
-    m_pos2 = new wxButton(this, window::id::BPTZPOS2, wxT("2"), wxPoint(ptzbuttonoriginx + ptzbuttonsize + ptzbuttonspacing, ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
-    m_pos3 = new wxButton(this, window::id::BPTZPOS3, wxT("3"), wxPoint(ptzbuttonoriginx + 2 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
-    m_pos4 = new wxButton(this, window::id::BPTZPOS4, wxT("4"), wxPoint(ptzbuttonoriginx + 3 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
-    m_pos5 = new wxButton(this, window::id::BPTZPOS5, wxT("5"), wxPoint(ptzbuttonoriginx + 4 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
-    m_pos6 = new wxButton(this, window::id::BPTZPOS6, wxT("6"), wxPoint(ptzbuttonoriginx + 5 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
-    m_pos7 = new wxButton(this, window::id::BPTZPOS7, wxT("7"), wxPoint(ptzbuttonoriginx + 6 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
-    m_pos8 = new wxButton(this, window::id::BPTZPOS8, wxT("8"), wxPoint(ptzbuttonoriginx + 7 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_ptzspeed = new wxSpinCtrl(this, window::id::BPTZSPEED,
+        wxT("3"), wxPoint(230, ptzbuttonoriginy + 2*(ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize+20, ptzbuttonsize), wxSP_ARROW_KEYS,  1, 5, 1);
+    m_ptzspeed->SetBackgroundColour(wxColor(214, 214, 214));
+    
+    m_preset = new wxSpinCtrl(this, window::id::BPTZSETPRESET,
+        wxT("1"), wxPoint(70, ptzbuttonoriginy + 5 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize + 20, ptzbuttonsize), wxSP_ARROW_KEYS, 1, 8, 1);
+    m_preset->SetBackgroundColour(wxColor(214, 214, 214));
 
+    m_pos1 = new wxButton(this, window::id::BPTZPOS1, wxT("1"), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_pos1->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(PTZPanel::OnPTPreset1), NULL, this);
+    //m_pos1->Bind(wxEVT_BUTTON, &PTZPanel::OnPTPreset1, this);
+    //Connect(wxEVT_BUTTON, wxCommandEventHandler(PTZPanel::OnPTPreset1));
+        
+    m_pos2 = new wxButton(this, window::id::BPTZPOS2, wxT("2"), wxPoint(ptzbuttonoriginx + ptzbuttonsize + ptzbuttonspacing, ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_pos2->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(PTZPanel::OnPTPreset2), NULL, this);
+    // m_pos2->Bind(wxEVT_BUTTON, &PTZPanel::OnPTPreset2, this);
+        //->Connect(wxEVT_BUTTON, wxCommandEventHandler(PTZPanel::OnPTPreset2)); 
+    
+    m_pos3 = new wxButton(this, window::id::BPTZPOS3, wxT("3"), wxPoint(ptzbuttonoriginx + 2 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_pos3->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(PTZPanel::OnPTPreset3), NULL, this);
+   // m_pos3->Connect(wxEVT_BUTTON, wxCommandEventHandler(PTZPanel::OnPTPreset3));
+
+    m_pos4 = new wxButton(this, window::id::BPTZPOS4, wxT("4"), wxPoint(ptzbuttonoriginx + 3 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_pos4->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(PTZPanel::OnPTPreset4), NULL, this);
+    //m_pos4->Connect(wxEVT_BUTTON, wxCommandEventHandler(PTZPanel::OnPTPreset4));
+
+    m_pos5 = new wxButton(this, window::id::BPTZPOS5, wxT("5"), wxPoint(ptzbuttonoriginx + 4 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_pos5->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(PTZPanel::OnPTPreset5), NULL, this);
+    //m_pos5->Connect(wxEVT_BUTTON, wxCommandEventHandler(PTZPanel::OnPTPreset5));
+
+    m_pos6 = new wxButton(this, window::id::BPTZPOS6, wxT("6"), wxPoint(ptzbuttonoriginx + 5 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_pos6->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(PTZPanel::OnPTPreset6), NULL, this);
+    //m_pos6->Connect(wxEVT_BUTTON, wxCommandEventHandler(PTZPanel::OnPTPreset6));
+
+    m_pos7 = new wxButton(this, window::id::BPTZPOS7, wxT("7"), wxPoint(ptzbuttonoriginx + 6 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_pos7->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(PTZPanel::OnPTPreset7), NULL, this);
+    //m_pos7->Connect(wxEVT_BUTTON, wxCommandEventHandler(PTZPanel::OnPTPreset7));
+
+    m_pos8 = new wxButton(this, window::id::BPTZPOS8, wxT("8"), wxPoint(ptzbuttonoriginx + 7 * (ptzbuttonsize + ptzbuttonspacing), ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_pos8->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(PTZPanel::OnPTPreset8), NULL, this);
+    //m_pos8->Connect(wxEVT_BUTTON, wxCommandEventHandler(PTZPanel::OnPTPreset8));
+
+
+
+    m_savepreset = new wxButton(this, window::id::BPTZSAVEPRESET, wxT("Save preset"), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy + 5 * (ptzbuttonsize + ptzbuttonspacing)));
+    m_savepreset->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(PTZPanel::OnPTSetPreset), NULL, this);
+
+    //m_savepreset->Connect(wxEVT_BUTTON, wxCommandEventHandler(PTZPanel::OnPTSetPreset));
+    //m_savepreset->Bind(wxEVT_BUTTON, &PTZPanel::OnPTSetPreset, this);
+
+    //m_textpreset = new wxStaticText(this, -1, wxT("Save Preset"), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy + 5 * (ptzbuttonsize + ptzbuttonspacing)));
+    //m_textpreset->SetForegroundColour(wxColor(214, 214, 214));
     //Connect(window::id::BZOOMIN, wxEVT_COMMAND_BUTTON_CLICKED,
     //    wxCommandEventHandler(PTZPanel::OnZoomIn));
     //Connect(window::id::BZOOMOUT, wxEVT_COMMAND_BUTTON_CLICKED,
@@ -109,6 +148,139 @@ PTZPanel::PTZPanel(wxPanel* parent)
     //    wxMouseEventHandler(PTZPanel::OnPTStop));
 
 }
+
+void PTZPanel::OnPTUp(wxMouseEvent& event)
+{
+    PanTilt pt("COM5", 2400);
+    pt.Up(m_ptzspeed->GetValue());
+    event.Skip();
+}
+
+
+void PTZPanel::OnPTDown(wxMouseEvent& event)
+{
+    PanTilt pt("COM5", 2400);
+    pt.Down(m_ptzspeed->GetValue());
+    event.Skip();
+}
+
+void PTZPanel::OnPTLeft(wxMouseEvent& event)
+{
+    PanTilt pt("COM5", 2400);
+    pt.Left(m_ptzspeed->GetValue());
+    event.Skip();
+}
+
+
+void PTZPanel::OnPTRight(wxMouseEvent& event)
+{
+    PanTilt pt("COM5", 2400);
+    pt.Right(m_ptzspeed->GetValue());
+    event.Skip();
+}
+
+void PTZPanel::OnPTUpRight(wxMouseEvent& event)
+{
+    PanTilt pt("COM5", 2400);
+    pt.UpRight(m_ptzspeed->GetValue());
+    event.Skip();
+}
+
+void PTZPanel::OnPTDownRight(wxMouseEvent& event)
+{
+    PanTilt pt("COM5", 2400);
+    pt.DownRight(m_ptzspeed->GetValue());
+    event.Skip();
+}
+
+void PTZPanel::OnPTUpLeft(wxMouseEvent& event)
+{
+    PanTilt pt("COM5", 2400);
+    pt.UpLeft(m_ptzspeed->GetValue());
+    event.Skip();
+}
+
+void PTZPanel::OnPTDownLeft(wxMouseEvent& event)
+{
+    PanTilt pt("COM5", 2400);
+    pt.DownLeft(m_ptzspeed->GetValue());
+    event.Skip();
+}
+
+void PTZPanel::OnPTStop(wxMouseEvent& event)
+{
+    PanTilt pt("COM5", 2400);
+    pt.Stop();
+    event.Skip();
+}
+
+void PTZPanel::OnPTSetPreset(wxMouseEvent& event)
+{
+    PanTilt pt("COM5", 2400);
+    //m_preset->Disable();
+        //->GetValue();
+    pt.SetPreset(m_preset->GetValue());
+        //m_preset->GetValue());
+    event.Skip();
+    //event.Skip();
+}
+
+void PTZPanel::OnPTPreset1(wxMouseEvent& event)
+{
+    PanTilt pt("COM5", 2400);
+    pt.Preset(1);
+    event.Skip();
+    //event.Skip();
+}
+void PTZPanel::OnPTPreset2(wxMouseEvent& event)
+{
+    PanTilt pt("COM5", 2400);
+    pt.Preset(2);
+    event.Skip();
+}
+void PTZPanel::OnPTPreset3(wxMouseEvent& event)
+{
+    PanTilt pt("COM5", 2400);
+    pt.Preset(3);
+    event.Skip();
+}
+void PTZPanel::OnPTPreset4(wxMouseEvent& event)
+{
+    PanTilt pt("COM5", 2400);
+    pt.Preset(4);
+    event.Skip();
+}
+void PTZPanel::OnPTPreset5(wxMouseEvent& event)
+{
+    PanTilt pt("COM5", 2400);
+    pt.Preset(5);
+    event.Skip();
+}
+void PTZPanel::OnPTPreset6(wxMouseEvent& event)
+{
+    PanTilt pt("COM5", 2400);
+    pt.Preset(6);
+    event.Skip();
+}
+void PTZPanel::OnPTPreset7(wxMouseEvent& event)
+{
+    PanTilt pt("COM5", 2400);
+    pt.Preset(7);
+    event.Skip();
+}
+void PTZPanel::OnPTPreset8(wxMouseEvent& event)
+{
+    PanTilt pt("COM5", 2400);
+    pt.Preset(8);
+    event.Skip();
+}
+void PTZPanel::OnPTPreset9(wxMouseEvent& event)
+{
+    PanTilt pt("COM5", 2400);
+    pt.Preset(9);
+    event.Skip();
+}
+
 
 
 
@@ -275,70 +447,3 @@ LogPanel::LogPanel(wxPanel* parent)
     this->SetSizerAndFit(sizer_log);
 }
 
-
-void PTZPanel::OnPTUp(wxMouseEvent& event)
-{
-    PanTilt pt("COM5", 2400);
-    pt.Up(m_ptzspeed->GetValue());
-    event.Skip();
-}
-
-
-void PTZPanel::OnPTDown(wxMouseEvent& event)
-{
-    PanTilt pt("COM5", 2400);
-    pt.Down(m_ptzspeed->GetValue());
-    event.Skip();
-}
-
-void PTZPanel::OnPTLeft(wxMouseEvent& event)
-{
-    PanTilt pt("COM5", 2400);
-    pt.Left(m_ptzspeed->GetValue());
-    event.Skip();
-}
-
-
-void PTZPanel::OnPTRight(wxMouseEvent& event)
-{
-    PanTilt pt("COM5", 2400);
-    pt.Right(m_ptzspeed->GetValue());
-    event.Skip();
-}
-
-void PTZPanel::OnPTUpRight(wxMouseEvent& event)
-{
-    PanTilt pt("COM5", 2400);
-    pt.UpRight(m_ptzspeed->GetValue());
-    event.Skip();
-}
-
-void PTZPanel::OnPTDownRight(wxMouseEvent& event)
-{
-    PanTilt pt("COM5", 2400);
-    pt.DownRight(m_ptzspeed->GetValue());
-    event.Skip();
-}
-
-void PTZPanel::OnPTUpLeft(wxMouseEvent& event)
-{
-    PanTilt pt("COM5", 2400);
-    pt.UpLeft(m_ptzspeed->GetValue());
-    event.Skip();
-}
-
-void PTZPanel::OnPTDownLeft(wxMouseEvent& event)
-{
-    PanTilt pt("COM5", 2400);
-    pt.DownLeft(m_ptzspeed->GetValue());
-    event.Skip();
-}
-
-
-
-void PTZPanel::OnPTStop(wxMouseEvent& event)
-{
-    PanTilt pt("COM5", 2400);
-    pt.Stop();
-    event.Skip();
-}

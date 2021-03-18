@@ -34,6 +34,9 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     EVT_MENU(window::id::NIRPOI, MainWindow::OnNirPoi)
     EVT_MENU(window::id::STREAMINFO, MainWindow::OnStreamInfo)
     EVT_MENU(window::id::CROSSHAIR, MainWindow::OnCrosshair)
+    //EVT_BUTTON(window::id::BPTZPOS1, PTZPanel::OnPTPreset1)
+    //EVT_BUTTON(window::id::BPTZPOS2, PTZPanel::OnPTPreset2)
+    //EVT_BUTTON(window::id::BPTZSAVEPRESET, PTZPanel::OnPTSetPreset)
 
 END_EVENT_TABLE()
 

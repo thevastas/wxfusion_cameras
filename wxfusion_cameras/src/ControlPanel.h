@@ -8,13 +8,12 @@
 #include "wx/radiobut.h"
 #include "wx/listbox.h"
 #include "wx/bitmap.h"
-//#include "MainWindow.h"
 class PTZPanel : public wxPanel
 {
 public:
 	PTZPanel(wxPanel* parent);
 
-	//wxButton* m_up;
+	// arrow buttons
 	wxBitmapButton* m_up;
 	wxBitmapButton* m_down;
 	wxBitmapButton* m_left;
@@ -34,7 +33,9 @@ public:
 	wxButton* m_focusout;
 
 	wxSpinCtrl* m_ptzspeed;
+	wxSpinCtrl* m_preset;
 
+	// position buttons 1 - 8
 	wxButton* m_pos1;
 	wxButton* m_pos2;
 	wxButton* m_pos3;
@@ -44,12 +45,24 @@ public:
 	wxButton* m_pos7;
 	wxButton* m_pos8;
 	wxStaticText* m_textpos;
+	wxButton* m_savepreset;
+	
+
 
 	wxPanel* m_parent;
-	//wxPanel* m_parent;
 
 	void OnZoomIn(wxCommandEvent& event);
 	void OnZoomOut(wxCommandEvent& event);
+	void OnPTPreset1(wxMouseEvent& event);
+	void OnPTPreset2(wxMouseEvent& event);
+	void OnPTPreset3(wxMouseEvent& event);
+	void OnPTPreset4(wxMouseEvent& event);
+	void OnPTPreset5(wxMouseEvent& event);
+	void OnPTPreset6(wxMouseEvent& event);
+	void OnPTPreset7(wxMouseEvent& event);
+	void OnPTPreset8(wxMouseEvent& event);
+	void OnPTPreset9(wxMouseEvent& event);
+	void OnPTSetPreset(wxMouseEvent& event);
 	void OnPTUp(wxMouseEvent& event);
 	void OnPTDown(wxMouseEvent& event);
 	void OnPTLeft(wxMouseEvent& event);
