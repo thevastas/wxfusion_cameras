@@ -66,6 +66,8 @@ public:
     ThermalCam lwir;
     NIRCam nir;
     Fusion fusion;
+    bool m_isInitialized = false;
+    bool m_onlyZoom = false;
     // pan tilt
 
 private:

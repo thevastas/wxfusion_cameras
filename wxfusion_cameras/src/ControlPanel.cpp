@@ -86,9 +86,7 @@ PTZPanel::PTZPanel(wxPanel* parent)
         wxT("3"), wxPoint(230, ptzbuttonoriginy + 2*(ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize+20, ptzbuttonsize), wxSP_ARROW_KEYS,  1, 5, 1);
     m_ptzspeed->SetBackgroundColour(wxColor(214, 214, 214));
     
-    m_preset = new wxSpinCtrl(this, window::id::BPTZSETPRESET,
-        wxT("1"), wxPoint(70, ptzbuttonoriginy + 5 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize + 20, ptzbuttonsize), wxSP_ARROW_KEYS, 1, 8, 1);
-    m_preset->SetBackgroundColour(wxColor(214, 214, 214));
+
 
     m_pos1 = new wxButton(this, window::id::BPTZPOS1, wxT("1"), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy + 4 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
     m_pos1->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(PTZPanel::OnPTPreset1), NULL, this);
@@ -124,9 +122,11 @@ PTZPanel::PTZPanel(wxPanel* parent)
     m_pos8->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(PTZPanel::OnPTPreset8), NULL, this);
     //m_pos8->Connect(wxEVT_BUTTON, wxCommandEventHandler(PTZPanel::OnPTPreset8));
 
-
-
-    m_savepreset = new wxButton(this, window::id::BPTZSAVEPRESET, wxT("Save preset"), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy + 5 * (ptzbuttonsize + ptzbuttonspacing)));
+    m_preset = new wxSpinCtrl(this, window::id::BPTZSETPRESET,
+        wxT("1"), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy + 5 * (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize + 10, ptzbuttonsize), wxSP_ARROW_KEYS, 1, 8, 1);
+    m_preset->SetBackgroundColour(wxColor(214, 214, 214));
+    
+    m_savepreset = new wxButton(this, window::id::BPTZSAVEPRESET, wxT("Save preset"), wxPoint(70, ptzbuttonoriginy + 5 * (ptzbuttonsize + ptzbuttonspacing)));
     m_savepreset->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(PTZPanel::OnPTSetPreset), NULL, this);
 
     //m_savepreset->Connect(wxEVT_BUTTON, wxCommandEventHandler(PTZPanel::OnPTSetPreset));
@@ -336,16 +336,16 @@ VideoSetPanel::VideoSetPanel(wxPanel* parent)
     m_pip->Append("Disabled");
     m_pip->SetSelection(m_pip->FindString("Disabled"));
 
-    Connect(window::id::BZOOMSTREAM, wxEVT_RADIOBUTTON,
-        wxCommandEventHandler(VideoSetPanel::OnZoomStream));
-    Connect(window::id::BNIRSTREAM, wxEVT_RADIOBUTTON,
+    //Connect(window::id::BZOOMSTREAM, wxEVT_RADIOBUTTON,
+        //wxCommandEventHandler(VideoSetPanel::OnZoomStream));
+    /*Connect(window::id::BNIRSTREAM, wxEVT_RADIOBUTTON,
         wxCommandEventHandler(VideoSetPanel::OnNirStream));
     Connect(window::id::BTHERMALSTREAM, wxEVT_RADIOBUTTON,
         wxCommandEventHandler(VideoSetPanel::OnThermalStream));
     Connect(window::id::BFUSIONSTREAM, wxEVT_RADIOBUTTON,
         wxCommandEventHandler(VideoSetPanel::OnFusionStream));
     Connect(window::id::BPIP, wxEVT_LISTBOX,
-        wxCommandEventHandler(VideoSetPanel::OnPip));
+        wxCommandEventHandler(VideoSetPanel::OnPip));*/
 
 }
 

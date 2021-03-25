@@ -34,6 +34,11 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     EVT_MENU(window::id::NIRPOI, MainWindow::OnNirPoi)
     EVT_MENU(window::id::STREAMINFO, MainWindow::OnStreamInfo)
     EVT_MENU(window::id::CROSSHAIR, MainWindow::OnCrosshair)
+    EVT_BUTTON(window::id::BMEASUREDISTANCE, MainWindow::OnRFMeasure)
+    EVT_RADIOBUTTON(window::id::BZOOMSTREAM, MainWindow::OnIPCamera)
+    EVT_RADIOBUTTON(window::id::BNIRSTREAM, MainWindow::OnNIRCamera)
+    EVT_RADIOBUTTON(window::id::BTHERMALSTREAM, MainWindow::OnLWIRCamera)
+    EVT_RADIOBUTTON(window::id::BFUSIONSTREAM, MainWindow::OnFusionCamera)
     //EVT_BUTTON(window::id::BPTZPOS1, PTZPanel::OnPTPreset1)
     //EVT_BUTTON(window::id::BPTZPOS2, PTZPanel::OnPTPreset2)
     //EVT_BUTTON(window::id::BPTZSAVEPRESET, PTZPanel::OnPTSetPreset)
@@ -614,6 +619,9 @@ wxBitmap MainWindow::ConvertMatToBitmap(const cv::Mat& matBitmap, long& timeConv
 void MainWindow::Clear()
 {
     DeleteIPCameraThread();
+    DeleteNIRCameraThread();
+    DeleteLWIRCameraThread();
+    DeleteFusionCameraThread();
 
     if (m_videoCapture)
     {
@@ -670,7 +678,7 @@ bool MainWindow::StartIPCameraCapture(const wxString& address, const wxSize& res
 
 bool MainWindow::StartIPCameraThread()
 {
-    DeleteIPCameraThread();
+    //DeleteIPCameraThread();
 
     m_cameraThread = new CameraThread(this, m_videoCapture);
     if (m_cameraThread->Run() != wxTHREAD_NO_ERROR)
@@ -684,8 +692,19 @@ bool MainWindow::StartIPCameraThread()
     return true;
 }
 
-void MainWindow::OnIPCamera(wxCommandEvent&)
+void MainWindow::OnIPCamera(wxCommandEvent& event)
 {
+
+    m_onlyZoom = true;
+    InitializeCameras(event);
+    wxArrayString strings;
+    strings.push_back("NIR");
+    strings.push_back("LWIR");
+    strings.push_back("Fusion");
+    strings.push_back("Disabled");
+    m_videopanel->m_pip->Set(strings);
+
+
     static wxString address = "rtsp://192.168.30.168/main";
     if (StartIPCameraCapture(address))
     {
@@ -731,21 +750,32 @@ void MainWindow::DeleteIPCameraThread()
 
 void MainWindow::InitializeCameras(wxCommandEvent& event)
 {
+
     DeleteIPCameraThread();
     DeleteNIRCameraThread();
     DeleteLWIRCameraThread();
     DeleteFusionCameraThread();
-    m_logpanel->m_logtext->AppendText("Initializing cameras...\n");
-    m_dataStream=nir.OpenDevice();
-    m_lwirhandle = lwir.Init();
-    if (!Proxy640USB_IsConnectToModule(m_lwirhandle) == eProxy640USBSuccess)
-    {
-        m_logpanel->m_logtext->AppendText("Could not connect to the LWIR camera.\n");
-    }
     
-    lwir.Setup(m_lwirhandle);
-    fusion.init(nir.GetFrame(true,m_dataStream), lwir.GetFrame(m_lwirhandle), 0, 0, 0.5, false);
-    m_logpanel->m_logtext->AppendText("Cameras initialized\n");
+    
+    if (!m_isInitialized && !m_onlyZoom) {
+        m_logpanel->m_logtext->AppendText("Initializing cameras...\n");
+        m_dataStream = nir.OpenDevice();
+        m_lwirhandle = lwir.Init();
+        if (!Proxy640USB_IsConnectToModule(m_lwirhandle) == eProxy640USBSuccess)
+        {
+            m_logpanel->m_logtext->AppendText("Could not connect to the LWIR camera.\n");
+        }
+
+        lwir.Setup(m_lwirhandle);
+        fusion.init(nir.GetFrame(true, m_dataStream), lwir.GetFrame(m_lwirhandle), 0, 0, 0.5, false);
+        m_logpanel->m_logtext->AppendText("Cameras initialized\n");
+        m_isInitialized = true;
+
+    }
+    else {
+        //disable initialize button
+    }
+
 }
 
 // LWIR CAMERA
@@ -766,10 +796,10 @@ bool MainWindow::StartLWIRCameraCapture(HANDLE handle)
 
 bool MainWindow::StartLWIRCameraThread()
 {
-    DeleteIPCameraThread();
+    /*DeleteIPCameraThread();
     DeleteNIRCameraThread();
     DeleteLWIRCameraThread();
-    DeleteFusionCameraThread();
+    DeleteFusionCameraThread();*/
 
     m_lwircameraThread = new LWIRCameraThread(this, m_lwirhandle);
     if (m_lwircameraThread->Run() != wxTHREAD_NO_ERROR)
@@ -793,9 +823,16 @@ void MainWindow::DeleteLWIRCameraThread()
     }
 }
 
-void MainWindow::OnLWIRCamera(wxCommandEvent&)
+void MainWindow::OnLWIRCamera(wxCommandEvent& event)
 {
-    
+    m_onlyZoom = false;
+    InitializeCameras(event);
+    wxArrayString strings;
+    strings.push_back("NIR");
+    strings.push_back("Zoom");
+    strings.push_back("Fusion");
+    strings.push_back("Disabled");
+    m_videopanel->m_pip->Set(strings);
     //static wxString address = "rtsp://192.168.30.168/main";
     if (StartLWIRCameraCapture(m_lwirhandle))
     {
@@ -830,6 +867,23 @@ void MainWindow::OnLWIRCameraFrame(wxThreadEvent& evt)
 }
 
 // NIR CAMERA
+
+void MainWindow::OnNIRCamera(wxCommandEvent& event) {
+    m_onlyZoom = false;
+    InitializeCameras(event);
+    wxArrayString strings;
+    strings.push_back("Zoom");
+    strings.push_back("LWIR");
+    strings.push_back("Fusion");
+    strings.push_back("Disabled");
+    m_videopanel->m_pip->Set(strings);
+
+    if (StartNIRCameraCapture())
+    {
+        m_mode = NIRCamera;
+    }
+}
+
 
 bool MainWindow::StartNIRCameraCapture() {
     Clear();
@@ -866,13 +920,7 @@ void MainWindow::DeleteNIRCameraThread() {
         m_nircameraThread = nullptr;
     }
 }
-void MainWindow::OnNIRCamera(wxCommandEvent&) {
 
-    if (StartNIRCameraCapture())
-    {
-        m_mode = NIRCamera;
-    }
-}
 void MainWindow::OnNIRCameraFrame(wxThreadEvent& evt) {
     NIRCameraThread::CameraFrame* frame = evt.GetPayload<NIRCameraThread::CameraFrame*>();
 
@@ -933,8 +981,16 @@ void MainWindow::DeleteFusionCameraThread() {
         m_fusioncameraThread = nullptr;
     }
 }
-void MainWindow::OnFusionCamera(wxCommandEvent&) {
-    
+void MainWindow::OnFusionCamera(wxCommandEvent& event) {
+    m_onlyZoom = false;
+
+    InitializeCameras(event);
+    wxArrayString strings;
+    strings.push_back("NIR");
+    strings.push_back("LWIR");
+    strings.push_back("Zoom");
+    strings.push_back("Disabled");
+    m_videopanel->m_pip->Set(strings);
     if (StartFusionCameraCapture())
     {
         m_mode = FuseNIRLWIR;
