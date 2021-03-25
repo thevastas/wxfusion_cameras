@@ -47,7 +47,12 @@ public:
     wxPanel* m_parent;
     // file functions
 
+    wxMenu* fileMenu;
+    wxMenu* rangefinderMenu;
     wxMenu* optionsMenu;
+    wxMenu* cameraMenu;
+    wxMenu* viewMenu;
+    
     void OnQuit(wxCommandEvent& event);
     // view functions
     void OnNirPoi(wxCommandEvent& event);

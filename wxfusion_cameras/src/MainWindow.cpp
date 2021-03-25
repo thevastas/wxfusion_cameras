@@ -455,7 +455,7 @@ MainWindow::MainWindow(wxWindow* parent,
 
 
     //FILE MENU
-    wxMenu* fileMenu = new wxMenu();
+    fileMenu = new wxMenu();
     menuBar->Append(fileMenu, _("&File"));
     fileMenu->Append(wxID_NEW);
     wxMenuItem* quitItem = new wxMenuItem(fileMenu, wxID_EXIT);
@@ -464,14 +464,14 @@ MainWindow::MainWindow(wxWindow* parent,
 
 
     // rangefinder MENU
-    wxMenu* rangefinderMenu = new wxMenu();
+    rangefinderMenu = new wxMenu();
     menuBar->Append(rangefinderMenu, _("&Rangefinder"));
     rangefinderMenu->Append(window::id::RFPOION, _("Pointer ON"));
     rangefinderMenu->Append(window::id::RFPOIOFF, _("Pointer OFF"));
     rangefinderMenu->Append(window::id::RFMEASURE, _("Measure"));
 
     // camera MENU
-    wxMenu* cameraMenu = new wxMenu();
+    cameraMenu = new wxMenu();
     menuBar->Append(cameraMenu, _("&Camera"));
     cameraMenu->Append(window::id::CAMERAINIT, "Initialize cameras");
     cameraMenu->Append(window::id::ENABLEZOOMCAMERA, "Enable zoom camera");
@@ -480,7 +480,7 @@ MainWindow::MainWindow(wxWindow* parent,
     cameraMenu->Append(window::id::ENABLEFUSIONCAMERA, "Enable fusion camera");
 
     // VIEW MENU
-    wxMenu* viewMenu = new wxMenu();
+    viewMenu = new wxMenu();
     menuBar->Append(viewMenu, _("&View"));
     viewMenu->Append(window::id::THERMALPOI,"Enable thermal POI");
     viewMenu->Append(window::id::NIRPOI, "Enable NIR POI");
@@ -750,7 +750,7 @@ void MainWindow::DeleteIPCameraThread()
 
 void MainWindow::InitializeCameras(wxCommandEvent& event)
 {
-
+    
     DeleteIPCameraThread();
     DeleteNIRCameraThread();
     DeleteLWIRCameraThread();
@@ -758,6 +758,7 @@ void MainWindow::InitializeCameras(wxCommandEvent& event)
     
     
     if (!m_isInitialized && !m_onlyZoom) {
+        cameraMenu->Enable(window::id::CAMERAINIT, 0);
         m_logpanel->m_logtext->AppendText("Initializing cameras...\n");
         m_dataStream = nir.OpenDevice();
         m_lwirhandle = lwir.Init();
@@ -796,11 +797,6 @@ bool MainWindow::StartLWIRCameraCapture(HANDLE handle)
 
 bool MainWindow::StartLWIRCameraThread()
 {
-    /*DeleteIPCameraThread();
-    DeleteNIRCameraThread();
-    DeleteLWIRCameraThread();
-    DeleteFusionCameraThread();*/
-
     m_lwircameraThread = new LWIRCameraThread(this, m_lwirhandle);
     if (m_lwircameraThread->Run() != wxTHREAD_NO_ERROR)
     {
@@ -1083,12 +1079,6 @@ void MainWindow::OnStreamInfo(wxCommandEvent&)
 
 
 
-
-
-
-
-
-
 void MainWindow::OnCameraEmpty(wxThreadEvent&)
 {
     wxLogError("Connection to the camera lost.");
@@ -1121,7 +1111,6 @@ void MainWindow::OnRFPointerOff(wxCommandEvent& event)
 void MainWindow::RFThread() {
     Rangefinder rangefinder("COM4", 19200);
     m_logpanel->m_logtext->AppendText("Measuring distance.. \n");
-    //m_logview->PrintLog("Measuring distance.. \n");
     wxString measurement = wxString::Format(wxT("Distance: %.2f meters \n"), rangefinder.Measure());
     m_logpanel->m_logtext->AppendText(measurement);
 }
@@ -1130,7 +1119,6 @@ void MainWindow::OnRFMeasure(wxCommandEvent& event)
 {
     Rangefinder rangefinder("COM4", 19200);
     m_logpanel->m_logtext->AppendText("Measuring distance.. \n");
-    //m_logview->PrintLog("Measuring distance.. \n");
     wxString measurement = wxString::Format(wxT("Distance: %.2f meters \n"), rangefinder.Measure());
     m_logpanel->m_logtext->AppendText(measurement);
 }
