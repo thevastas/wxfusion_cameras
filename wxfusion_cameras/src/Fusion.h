@@ -19,17 +19,17 @@ private:
 	int m_lwirx2;
 	int m_lwiry1;
 	int m_lwiry2;
-	cv::Mat m_nir_roi;
-	cv::Mat m_lwir_roi;
-	cv::Mat m_nir_poi;
-	cv::Mat m_lwir_poi;
+	cv::UMat m_nir_roi;
+	cv::UMat m_lwir_roi;
+	cv::UMat m_nir_poi;
+	cv::UMat m_lwir_poi;
 public:
 	int m_offsety;
 	int m_offsetx;
 	double m_ratio;
 	bool m_palette;
-	cv::Mat m_fused_img;
-	cv::Mat fuse_offset(cv::Mat nir_img, cv::Mat lwir_img);
-	void init(cv::Mat nir_img, cv::Mat lwir_img, int offsetx, int offsety, double ratio, bool palette);
+	cv::UMat m_fused_img;
+	cv::UMat fuse_offset(cv::UMat nir_img, cv::UMat lwir_img);
+	void init(cv::UMat nir_img, cv::UMat lwir_img, int offsetx, int offsety, double ratio, bool palette);
 };
 

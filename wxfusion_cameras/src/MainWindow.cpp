@@ -77,7 +77,7 @@ class CameraThread : public wxThread
 public:
     struct CameraFrame
     {
-        cv::Mat matBitmap;
+        cv::UMat matBitmap;
         long    timeGet{ 0 };
     };
 
@@ -161,7 +161,7 @@ class LWIRCameraThread : public wxThread
 public:
     struct CameraFrame
     {
-        cv::Mat matBitmap;
+        cv::UMat matBitmap;
         long    timeGet{ 0 };
     };
     ThermalCam lwirt;
@@ -196,17 +196,7 @@ wxThread::ExitCode LWIRCameraThread::Entry()
             frame = new CameraFrame;
             stopWatch.Start();
             frame->matBitmap = lwirt.GetFrame(m_lwircamera);
-            //cv::cvtColor(frame->matBitmap, frame->matBitmap, cv::COLOR_GRAY2BGR);
-            //Proxy640USB_GetImage(m_lwircamera, frame->matBitmap, frame->meta, 1);
-            //(*m_lwircamera) >> frame->matBitmap; //retrieve frame from capture
-            //thermal.getframe
             frame->timeGet = stopWatch.Time(); //measure retrieval time
-
-                //wxThreadEvent* evt = new wxThreadEvent(wxEVT_LWIRCAMERA_FRAME);
-
-                //evt->SetPayload(frame);
-                //m_eventSink->QueueEvent(evt);
-
             //WARNING
             if (!frame->matBitmap.empty()) //if successful, set payload
             {
@@ -256,7 +246,7 @@ class NIRCameraThread : public wxThread
 public:
     struct CameraFrame
     {
-        cv::Mat matBitmap;
+        cv::UMat matBitmap;
         long    timeGet{ 0 };
     };
     NIRCam nirt;
@@ -345,8 +335,8 @@ class FusionCameraThread : public wxThread
 public:
     struct CameraFrame
     {
-        cv::Mat matNirBitmap;
-        cv::Mat matLwirBitmap;
+        cv::UMat matNirBitmap;
+        cv::UMat matLwirBitmap;
         long    timeGet{ 0 };
     };
     NIRCam nirt;
@@ -593,7 +583,8 @@ void MainWindow::OnCrosshair(wxCommandEvent& event)
     wxMessageBox("Crosshair not implemented");
 };
 
-wxBitmap MainWindow::ConvertMatToBitmap(const cv::Mat& matBitmap, long& timeConvert)
+//wxBitmap MainWindow::ConvertMatToBitmap(const cv::UMat& matBitmap, long& timeConvert)
+wxBitmap MainWindow::ConvertMatToBitmap(const cv::UMat matBitmap, long& timeConvert)
 {
     wxCHECK(!matBitmap.empty(), wxBitmap());
 
@@ -640,6 +631,37 @@ void MainWindow::Clear()
 
 }
 
+void MainWindow::InitializeCameras(wxCommandEvent& event)
+{
+
+    DeleteIPCameraThread();
+    DeleteNIRCameraThread();
+    DeleteLWIRCameraThread();
+    DeleteFusionCameraThread();
+
+
+    if (!m_isInitialized && !m_onlyZoom) {
+        cameraMenu->Enable(window::id::CAMERAINIT, 0);
+        m_logpanel->m_logtext->AppendText("Initializing cameras...\n");
+        m_dataStream = nir.OpenDevice();
+        m_lwirhandle = lwir.Init();
+        if (!Proxy640USB_IsConnectToModule(m_lwirhandle) == eProxy640USBSuccess)
+        {
+            m_logpanel->m_logtext->AppendText("Could not connect to the LWIR camera.\n");
+        }
+
+        lwir.Setup(m_lwirhandle);
+        //fusion.init(nir.GetFrame(true, m_dataStream), lwir.GetFrame(m_lwirhandle), 0, 0, 0.5, true);
+        m_logpanel->m_logtext->AppendText("Cameras initialized\n");
+        m_isInitialized = true;
+
+    }
+    else {
+        m_isInitialized = false;
+    }
+
+}
+
 // IP CAMERA 
 
 bool MainWindow::StartIPCameraCapture(const wxString& address, const wxSize& resolution,
@@ -675,7 +697,6 @@ bool MainWindow::StartIPCameraCapture(const wxString& address, const wxSize& res
 
     return true;
 }
-
 bool MainWindow::StartIPCameraThread()
 {
     //DeleteIPCameraThread();
@@ -691,7 +712,6 @@ bool MainWindow::StartIPCameraThread()
 
     return true;
 }
-
 void MainWindow::OnIPCamera(wxCommandEvent& event)
 {
 
@@ -714,7 +734,6 @@ void MainWindow::OnIPCamera(wxCommandEvent& event)
         optionsMenu->Enable(window::id::STREAMINFO, 1);
     }
 }
-
 void MainWindow::OnCameraFrame(wxThreadEvent& evt)
 {
     CameraThread::CameraFrame* frame = evt.GetPayload<CameraThread::CameraFrame*>();
@@ -728,7 +747,9 @@ void MainWindow::OnCameraFrame(wxThreadEvent& evt)
     }
 
     long     timeConvert = 0;
-    wxBitmap bitmap = ConvertMatToBitmap(frame->matBitmap, timeConvert);
+    frame->matBitmap.copyTo(m_ocvmat);
+  
+    wxBitmap bitmap = ConvertMatToBitmap(m_ocvmat, timeConvert);
 
     if (bitmap.IsOk())
         m_bitmapPanel->SetBitmap(bitmap, frame->timeGet, timeConvert);
@@ -737,7 +758,6 @@ void MainWindow::OnCameraFrame(wxThreadEvent& evt)
 
     delete frame;
 }
-
 void MainWindow::DeleteIPCameraThread()
 {
     if (m_cameraThread)
@@ -748,36 +768,6 @@ void MainWindow::DeleteIPCameraThread()
     }
 }
 
-void MainWindow::InitializeCameras(wxCommandEvent& event)
-{
-    
-    DeleteIPCameraThread();
-    DeleteNIRCameraThread();
-    DeleteLWIRCameraThread();
-    DeleteFusionCameraThread();
-    
-    
-    if (!m_isInitialized && !m_onlyZoom) {
-        cameraMenu->Enable(window::id::CAMERAINIT, 0);
-        m_logpanel->m_logtext->AppendText("Initializing cameras...\n");
-        m_dataStream = nir.OpenDevice();
-        m_lwirhandle = lwir.Init();
-        if (!Proxy640USB_IsConnectToModule(m_lwirhandle) == eProxy640USBSuccess)
-        {
-            m_logpanel->m_logtext->AppendText("Could not connect to the LWIR camera.\n");
-        }
-
-        lwir.Setup(m_lwirhandle);
-        fusion.init(nir.GetFrame(true, m_dataStream), lwir.GetFrame(m_lwirhandle), 0, 0, 0.5, false);
-        m_logpanel->m_logtext->AppendText("Cameras initialized\n");
-        m_isInitialized = true;
-
-    }
-    else {
-        //disable initialize button
-    }
-
-}
 
 // LWIR CAMERA
 
@@ -794,7 +784,6 @@ bool MainWindow::StartLWIRCameraCapture(HANDLE handle)
     return true;
 
 }
-
 bool MainWindow::StartLWIRCameraThread()
 {
     m_lwircameraThread = new LWIRCameraThread(this, m_lwirhandle);
@@ -808,7 +797,6 @@ bool MainWindow::StartLWIRCameraThread()
 
     return true;
 }
-
 void MainWindow::DeleteLWIRCameraThread()
 {
     if (m_lwircameraThread)
@@ -818,7 +806,6 @@ void MainWindow::DeleteLWIRCameraThread()
         m_lwircameraThread = nullptr;
     }
 }
-
 void MainWindow::OnLWIRCamera(wxCommandEvent& event)
 {
     m_onlyZoom = false;
@@ -838,7 +825,6 @@ void MainWindow::OnLWIRCamera(wxCommandEvent& event)
         //optionsMenu->Enable(window::id::STREAMINFO, 1);
     }
 }
-
 void MainWindow::OnLWIRCameraFrame(wxThreadEvent& evt)
 {
     LWIRCameraThread::CameraFrame* frame = evt.GetPayload<LWIRCameraThread::CameraFrame*>();
@@ -879,8 +865,6 @@ void MainWindow::OnNIRCamera(wxCommandEvent& event) {
         m_mode = NIRCamera;
     }
 }
-
-
 bool MainWindow::StartNIRCameraCapture() {
     Clear();
 
@@ -916,7 +900,6 @@ void MainWindow::DeleteNIRCameraThread() {
         m_nircameraThread = nullptr;
     }
 }
-
 void MainWindow::OnNIRCameraFrame(wxThreadEvent& evt) {
     NIRCameraThread::CameraFrame* frame = evt.GetPayload<NIRCameraThread::CameraFrame*>();
 
@@ -940,7 +923,21 @@ void MainWindow::OnNIRCameraFrame(wxThreadEvent& evt) {
 }
 
 // FUSION
+void MainWindow::OnFusionCamera(wxCommandEvent& event) {
+    m_onlyZoom = false;
 
+    InitializeCameras(event);
+    wxArrayString strings;
+    strings.push_back("NIR");
+    strings.push_back("LWIR");
+    strings.push_back("Zoom");
+    strings.push_back("Disabled");
+    m_videopanel->m_pip->Set(strings);
+    if (StartFusionCameraCapture())
+    {
+        m_mode = FuseNIRLWIR;
+    }
+}
 bool MainWindow::StartFusionCameraCapture() {
     Clear();
 
@@ -977,21 +974,6 @@ void MainWindow::DeleteFusionCameraThread() {
         m_fusioncameraThread = nullptr;
     }
 }
-void MainWindow::OnFusionCamera(wxCommandEvent& event) {
-    m_onlyZoom = false;
-
-    InitializeCameras(event);
-    wxArrayString strings;
-    strings.push_back("NIR");
-    strings.push_back("LWIR");
-    strings.push_back("Zoom");
-    strings.push_back("Disabled");
-    m_videopanel->m_pip->Set(strings);
-    if (StartFusionCameraCapture())
-    {
-        m_mode = FuseNIRLWIR;
-    }
-}
 void MainWindow::OnFusionCameraFrame(wxThreadEvent& evt) {
     FusionCameraThread::CameraFrame* frame = evt.GetPayload<FusionCameraThread::CameraFrame*>();
 
@@ -1006,7 +988,6 @@ void MainWindow::OnFusionCameraFrame(wxThreadEvent& evt) {
     long     timeConvert = 0;
 
     fusion.m_fused_img = fusion.fuse_offset(frame->matNirBitmap, frame->matLwirBitmap);
-    //fusion.m_fused_img
 
     wxBitmap bitmap = ConvertMatToBitmap(fusion.m_fused_img, timeConvert);
 
@@ -1096,20 +1077,20 @@ void MainWindow::OnCameraException(wxThreadEvent& evt)
 
 void MainWindow::OnRFPointerOn(wxCommandEvent& event)
 {
-    Rangefinder rangefinder("COM4", 19200);
+    Rangefinder rangefinder("COM6", 19200);
     rangefinder.PointerOn();
     m_logpanel->m_logtext->AppendText("Pointer was turned ON \n");
 }
 
 void MainWindow::OnRFPointerOff(wxCommandEvent& event)
 {
-    Rangefinder rangefinder("COM4", 19200);
+    Rangefinder rangefinder("COM6", 19200);
     rangefinder.PointerOff();
     m_logpanel->m_logtext->AppendText("Pointer was turned OFF \n");
 }
 
 void MainWindow::RFThread() {
-    Rangefinder rangefinder("COM4", 19200);
+    Rangefinder rangefinder("COM6", 19200);
     m_logpanel->m_logtext->AppendText("Measuring distance.. \n");
     wxString measurement = wxString::Format(wxT("Distance: %.2f meters \n"), rangefinder.Measure());
     m_logpanel->m_logtext->AppendText(measurement);
@@ -1117,7 +1098,7 @@ void MainWindow::RFThread() {
 
 void MainWindow::OnRFMeasure(wxCommandEvent& event)
 {
-    Rangefinder rangefinder("COM4", 19200);
+    Rangefinder rangefinder("COM6", 19200);
     m_logpanel->m_logtext->AppendText("Measuring distance.. \n");
     wxString measurement = wxString::Format(wxT("Distance: %.2f meters \n"), rangefinder.Measure());
     m_logpanel->m_logtext->AppendText(measurement);

@@ -680,7 +680,9 @@ public:
     std::shared_ptr<peak::core::NodeMap> m_nodemapRemoteDevice;
     AutoFeaturesManager m_autoFeaturesManager;
     std::shared_ptr<peak::core::DataStream> OpenDevice();
-    cv::Mat GetFrame(bool automaticmode, std::shared_ptr<peak::core::DataStream> m_dataStream);
+    cv::UMat GetFrame(bool automaticmode, std::shared_ptr<peak::core::DataStream> m_dataStream);
+    cv::UMat uimage, uimage2, uimage3, uimage4;
+    cv::Mat outImage;
     void CloseDevice();
 };
 

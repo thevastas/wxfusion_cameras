@@ -24,7 +24,7 @@ namespace
     // as SetDIBits() requires the DIB rows to be DWORD-aligned.
     // Should not be called directly but only from ConvertMatBitmapTowxBitmap()
     // which does all the necessary debug checks.
-    bool ConvertMatBitmapTowxBitmapMSW(const cv::Mat& matBitmap, wxBitmap& bitmap)
+    bool ConvertMatBitmapTowxBitmapMSW(const cv::Mat matBitmap, wxBitmap& bitmap)
     {
         const HDC  hScreenDC = ::GetDC(nullptr);
         BITMAPINFO bitmapInfo{ 0 };
@@ -49,21 +49,23 @@ namespace
 #endif // #ifndef __WXMSW__
 
 // See the function description in the header file.
-bool ConvertMatBitmapTowxBitmap(const cv::Mat& matBitmap, wxBitmap& bitmap)
+bool ConvertMatBitmapTowxBitmap(const cv::UMat matBitmap, wxBitmap& bitmap)
 {
-    wxCHECK(!matBitmap.empty(), false);
-    wxCHECK(matBitmap.type() == CV_8UC3 , false); 
-    wxCHECK(matBitmap.dims == 2, false);
+    cv::Mat ocvbitmap=matBitmap.getMat(cv::ACCESS_READ);
+    //matBitmap.copyTo(ocvbitmap);
+    wxCHECK(!ocvbitmap.empty(), false);
+    wxCHECK(ocvbitmap.type() == CV_8UC3 , false);
+    wxCHECK(ocvbitmap.dims == 2, false);
     wxCHECK(bitmap.IsOk(), false);
-    wxCHECK(bitmap.GetWidth() == matBitmap.cols && bitmap.GetHeight() == matBitmap.rows, false);
+    wxCHECK(bitmap.GetWidth() == ocvbitmap.cols && bitmap.GetHeight() == ocvbitmap.rows, false);
     wxCHECK(bitmap.GetDepth() == 24, false);
 
 #ifdef __WXMSW__
     if (bitmap.IsDIB()
-        && matBitmap.isContinuous()
-        && matBitmap.cols % 4 == 0)
+        && ocvbitmap.isContinuous()
+        && ocvbitmap.cols % 4 == 0)
     {
-        return ConvertMatBitmapTowxBitmapMSW(matBitmap, bitmap);
+        return ConvertMatBitmapTowxBitmapMSW(ocvbitmap, bitmap);
     }
 #endif
 
@@ -72,7 +74,7 @@ bool ConvertMatBitmapTowxBitmap(const cv::Mat& matBitmap, wxBitmap& bitmap)
 
     if (matBitmap.isContinuous())
     {
-        const uchar* bgr = matBitmap.data;
+        const uchar* bgr = ocvbitmap.data;
 
         for (int row = 0; row < pixelData.GetHeight(); ++row)
         {
@@ -90,7 +92,7 @@ bool ConvertMatBitmapTowxBitmap(const cv::Mat& matBitmap, wxBitmap& bitmap)
     }
     else // Is it even possible for Mat with image to be not continous?
     {
-        auto matBitmapIt = matBitmap.begin<cv::Vec3b>();
+        auto matBitmapIt = ocvbitmap.begin<cv::Vec3b>();
 
         for (int row = 0; row < pixelData.GetHeight(); ++row)
         {

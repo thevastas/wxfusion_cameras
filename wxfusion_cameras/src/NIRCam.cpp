@@ -1564,7 +1564,7 @@ std::shared_ptr<peak::core::DataStream> NIRCam::OpenDevice()
     return m_dataStream;
 }
 
-cv::Mat NIRCam::GetFrame(bool automaticmode, std::shared_ptr<peak::core::DataStream> dataStream)
+cv::UMat NIRCam::GetFrame(bool automaticmode, std::shared_ptr<peak::core::DataStream> dataStream)
 {
     cv::Mat cvImage;
     m_dataStream = dataStream;
@@ -1603,16 +1603,20 @@ cv::Mat NIRCam::GetFrame(bool automaticmode, std::shared_ptr<peak::core::DataStr
     }
 
 
-    auto image = peak::BufferTo<peak::ipl::Image>(buffer).ConvertTo(peak::ipl::PixelFormatName::Mono8);
+    auto image = peak::BufferTo<peak::ipl::Image>(buffer).ConvertTo(peak::ipl::PixelFormatName::Mono8, peak::ipl::ConversionMode::Fast);
     cvImage = cv::Mat::zeros(image.Height(), image.Width(), CV_8UC1);
     int sizeBuffer = static_cast<int>(image.ByteCount());
     std::memcpy(cvImage.data, image.Data(), static_cast<size_t>(sizeBuffer));
     m_dataStream->QueueBuffer(buffer);
-    cv::cvtColor(cvImage, cvImage, cv::COLOR_GRAY2BGR);
-    //cv::convertScaleAbs(cvImage, cvImage, 1.0 / 256);
-    cv::resize(cvImage, cvImage, cv::Size(1296, 972));
-    cv::flip(cvImage, cvImage, 0);
-    return cvImage;
+
+    cvImage.copyTo(uimage);
+    cv::resize(uimage, uimage2, cv::Size(1296, 972), cv::INTER_CUBIC);
+    cv::cvtColor(uimage2, uimage3, cv::COLOR_GRAY2BGR);  
+    cv::flip(uimage3, uimage4, 0);
+    
+    return uimage4;
+   // uimage.copyTo(outImage);
+    //return outImage;
 }
 
 void NIRCam::CloseDevice()

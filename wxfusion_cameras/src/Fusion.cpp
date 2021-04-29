@@ -1,6 +1,6 @@
 #include "Fusion.h"
-void Fusion::init(cv::Mat nir_img, cv::Mat lwir_img, int offsetx, int offsety, double ratio, bool palette) {
-
+void Fusion::init(cv::UMat nir_img, cv::UMat lwir_img, int offsetx, int offsety, double ratio, bool palette) {
+    m_palette = palette;
     if (offsetx >= 0) {
         if (offsety >= 0) { //both positive
             //X
@@ -72,29 +72,35 @@ void Fusion::init(cv::Mat nir_img, cv::Mat lwir_img, int offsetx, int offsety, d
     //return fused_img;
 
 }
-cv::Mat Fusion::fuse_offset(cv::Mat nir_img, cv::Mat lwir_img) {
+cv::UMat Fusion::fuse_offset(cv::UMat nir_img, cv::UMat lwir_img) {
     m_nir_roi = nir_img(cv::Rect(m_nirx1, m_niry1, m_fused_columns, m_fused_rows));
     m_lwir_roi = lwir_img(cv::Rect(m_lwirx1, m_lwiry1, m_fused_columns, m_fused_rows));
 
     m_nir_poi = m_nir_roi.clone();
     m_lwir_poi = m_lwir_roi.clone();
 
+    cv::cvtColor(m_nir_poi, m_nir_poi, cv::COLOR_BGR2GRAY);
+    cv::cvtColor(m_lwir_poi, m_lwir_poi, cv::COLOR_BGR2GRAY);
+    //warning
+    m_palette = true;
+
     if (m_palette) {
 
-        const cv::Mat zero_img = cv::Mat::zeros(m_nir_poi.rows, m_nir_poi.cols, CV_8UC1);
-        std::vector<cv::Mat> images(3);
+        const cv::UMat zero_img = cv::UMat::zeros(m_nir_poi.rows, m_nir_poi.cols, CV_8UC1);
+        std::vector<cv::UMat> images(3);
         images.at(0) = zero_img;
         images.at(1) = m_nir_poi;
         images.at(2) = m_lwir_poi;
         cv::merge(images, m_fused_img);
+        m_fused_img.convertTo(m_fused_img, CV_8UC3);
         //applyColorMap(lwir_poi, lwir_poi, cv::COLORMAP_HOT);
         //cvtColor(nir_poi, nir_poi, cv::COLOR_GRAY2BGR);
         //applyColorMap(nir_poi, nir_poi, cv::COLORMAP_BONE);
     }
     else {
-        m_nir_poi = m_nir_poi * m_ratio;
-        m_lwir_poi = m_lwir_poi * (1 - m_ratio);
-        m_fused_img = m_nir_poi + m_lwir_poi;
+        //m_nir_poi = m_nir_poi * m_ratio;
+        //m_lwir_poi = m_lwir_poi * (1 - m_ratio);
+        //m_fused_img = m_nir_poi + m_lwir_poi;
     }
     //return;
     return m_fused_img;

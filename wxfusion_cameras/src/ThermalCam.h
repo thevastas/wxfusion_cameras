@@ -17,14 +17,18 @@ private:
 	int i;
 public:
 
-
+	cv::Mat srcImage;// = cv::Mat::zeros(480, 640, CV_16U);
 	HANDLE handle = NULL;
 	HANDLE Init();
 	void Setup(HANDLE handle);
-	cv::Mat GetFrame(HANDLE handle);
+	cv::UMat GetFrame(HANDLE handle);
 	void Close(HANDLE handle);
 	unsigned char offset = '1';
 	unsigned char gain = '0';
 	wxPanel* m_parent;
+	cv::UMat uimage;
+	cv::UMat uimage2;
+	cv::UMat uimage3;// = cv::UMat(480, 640, CV_16U);
+	cv::UMat outImage;// = cv::Mat::zeros(972, 1296, CV_8UC3);
 };
 

@@ -73,6 +73,7 @@ public:
     Fusion fusion;
     bool m_isInitialized = false;
     bool m_onlyZoom = false;
+    cv::UMat m_ocvmat;
     // pan tilt
 
 private:
@@ -107,7 +108,8 @@ private:
     wxSlider* m_videoSlider;
     wxButton* m_propertiesButton;
 
-    static wxBitmap ConvertMatToBitmap(const cv::Mat& matBitmap, long& timeConvert);
+    static wxBitmap ConvertMatToBitmap(const cv::UMat matBitmap, long& timeConvert);
+    //cv::Mat m_ocvbitmap;
 
     void Clear();
 

@@ -54,6 +54,12 @@
     <ClInclude Include="src\PanTilt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ThermalZoom.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ThermalZoom.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\App.cpp">
@@ -74,9 +80,6 @@
     <ClCompile Include="src\bmpfromocvpanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\ThermalCam.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\NIRCam.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -87,6 +90,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\PanTilt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThermalZoom.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

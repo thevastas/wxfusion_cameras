@@ -41,7 +41,8 @@ class wxBitmap;
     wxBitmap outside the loop and reusing it in the loop instead
     of creating it every time inside the loop.
 */
-bool ConvertMatBitmapTowxBitmap(const cv::Mat& matBitmap, wxBitmap& bitmap);
+bool ConvertMatBitmapTowxBitmap(const cv::UMat matBitmap, wxBitmap& bitmap);
+
 
 
 #endif // #ifndef CONVERTMATTOWXBMP_H
