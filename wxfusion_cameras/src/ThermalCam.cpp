@@ -71,16 +71,16 @@ void ThermalCam::Setup(HANDLE handle) {
 	}
 }
 
-cv::Mat ThermalCam::GetFrame(HANDLE handle) {
+cv::UMat ThermalCam::GetFrame(HANDLE handle) {
 	cv::Mat srcImage;
 	Proxy640USB_GetImage(handle, frame, meta, timeout);
 	
 	srcImage = cv::Mat(480, 640, CV_16U, frame);
-	cv::cvtColor(srcImage, srcImage, cv::COLOR_GRAY2BGR);
-	cv::convertScaleAbs(srcImage, srcImage, 1.0/256);
-	srcImage.convertTo(srcImage, CV_8UC3);
-	cv::resize(srcImage, srcImage , cv::Size(1296, 972));
-	return srcImage;
+	cv::cvtColor(srcImage, uimage, cv::COLOR_GRAY2BGR);
+	cv::convertScaleAbs(uimage, uimage2, 1.0/256);
+	uimage2.convertTo(uimage3, CV_8UC3);
+	cv::resize(uimage3, outImage , cv::Size(1296, 972));
+	return outImage;
 
 }
 

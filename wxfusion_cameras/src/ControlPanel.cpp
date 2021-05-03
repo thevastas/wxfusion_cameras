@@ -1,6 +1,7 @@
 //#include "ControlPanel.h"
 #include "MainWindow.h"
 #include "PanTilt.h"
+#include "ThermalZoom.h"
 
 //ControlPanel::ControlPanel(wxPanel* parent)
 PTZPanel::PTZPanel(wxPanel* parent)
@@ -447,3 +448,72 @@ LogPanel::LogPanel(wxPanel* parent)
     this->SetSizerAndFit(sizer_log);
 }
 
+ThermalLensPanel::ThermalLensPanel(wxPanel* parent) : wxPanel(parent, -1, wxDefaultPosition, wxSize(300, 100))
+{
+    //SetBackgroundColour(wxColor(32, 32, 32));
+    wxImage::AddHandler(new wxPNGHandler);
+    m_parent = parent;
+
+    int ptzbuttonsize = 30;
+    wxSize ptzarrowsize = wxSize(ptzbuttonsize, ptzbuttonsize);
+    int ptzbuttonspacing = 5;
+    int ptzbuttonoriginx = 10;
+    int ptzbuttonoriginy = 10;
+
+
+    m_zoomin = new wxBitmapButton(this, window::id::BTZOOMIN, wxBitmap(wxT("img/arrow_up.png"), wxBITMAP_TYPE_PNG), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_zoomin->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(ThermalLensPanel::OnZoomIn), NULL, this);
+    m_zoomin->Connect(wxEVT_LEFT_UP, wxMouseEventHandler(ThermalLensPanel::OnStop), NULL, this);
+
+    m_focusin = new wxBitmapButton(this, window::id::BTFOCUSIN, wxBitmap(wxT("img/arrow_left.png"), wxBITMAP_TYPE_PNG), wxPoint(ptzbuttonoriginx + ptzbuttonsize + ptzbuttonspacing, ptzbuttonoriginy), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_focusin->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(ThermalLensPanel::OnFocusIn), NULL, this);
+    m_focusin->Connect(wxEVT_LEFT_UP, wxMouseEventHandler(ThermalLensPanel::OnStop), NULL, this);
+
+
+
+    m_zoomout = new wxBitmapButton(this, window::id::BTZOOMOUT, wxBitmap(wxT("img/arrow_down.png"), wxBITMAP_TYPE_PNG), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy +  (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_zoomout->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(ThermalLensPanel::OnZoomOut), NULL, this);
+    m_zoomout->Connect(wxEVT_LEFT_UP, wxMouseEventHandler(ThermalLensPanel::OnStop), NULL, this);
+
+
+    m_focusout = new wxBitmapButton(this, window::id::BTFOCUSOUT, wxBitmap(wxT("img/arrow_right.png"), wxBITMAP_TYPE_PNG), wxPoint(ptzbuttonoriginx + ptzbuttonsize + ptzbuttonspacing, ptzbuttonoriginy +  (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_focusout->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(ThermalLensPanel::OnFocusOut), NULL, this);
+    m_focusout->Connect(wxEVT_LEFT_UP, wxMouseEventHandler(ThermalLensPanel::OnStop), NULL, this);
+
+}
+
+void ThermalLensPanel::OnStop(wxMouseEvent& event)
+{
+    ThermalZoom pt(m_parent, "COM6", 2400);
+    pt.Stop();
+    event.Skip();
+}
+
+void ThermalLensPanel::OnZoomIn(wxMouseEvent& event)
+{
+    ThermalZoom pt(m_parent, "COM6", 2400);
+    pt.ZoomIn(5);
+    //Close();
+    event.Skip();
+}
+
+void ThermalLensPanel::OnZoomOut(wxMouseEvent& event)
+{
+    ThermalZoom pt(m_parent, "COM6", 2400);
+    pt.ZoomOut(5);
+    event.Skip();
+}
+
+void ThermalLensPanel::OnFocusIn(wxMouseEvent& event)
+{
+    ThermalZoom pt(m_parent, "COM6", 2400);
+    pt.FocusIn(5);
+    event.Skip();
+}
+
+void ThermalLensPanel::OnFocusOut(wxMouseEvent& event)
+{
+    ThermalZoom pt(m_parent, "COM6", 2400);
+    pt.FocusOut(5);
+    event.Skip();
+}

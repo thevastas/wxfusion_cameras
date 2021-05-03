@@ -504,10 +504,14 @@ MainWindow::MainWindow(wxWindow* parent,
     m_fusionratiopanel = new FusionRatioPanel(m_parent);
     m_fusionratiopanel->SetBackgroundColour(wxColor(64, 64, 64));
 
+    m_thermalpanel = new ThermalLensPanel(m_parent); 
+    m_thermalpanel->SetBackgroundColour(wxColor(64, 64, 64));
+
     wxSizer* sizer_controls = new wxBoxSizer(wxVERTICAL);
     sizer_controls->Add(m_videopanel, 0, wxEXPAND | wxBOTTOM, 5);
     sizer_controls->Add(m_fusionratiopanel, 0, wxEXPAND | wxBOTTOM, 5);
     sizer_controls->Add(m_rfpanel, 0, wxEXPAND | wxBOTTOM, 5);
+    sizer_controls->Add(m_thermalpanel, 0, wxEXPAND | wxBOTTOM, 5);
     sizer_controls->Add(m_ptzpanel, 1, wxEXPAND);
 
 
@@ -1077,20 +1081,20 @@ void MainWindow::OnCameraException(wxThreadEvent& evt)
 
 void MainWindow::OnRFPointerOn(wxCommandEvent& event)
 {
-    Rangefinder rangefinder("COM6", 19200);
+    Rangefinder rangefinder("COM4", 19200);
     rangefinder.PointerOn();
     m_logpanel->m_logtext->AppendText("Pointer was turned ON \n");
 }
 
 void MainWindow::OnRFPointerOff(wxCommandEvent& event)
 {
-    Rangefinder rangefinder("COM6", 19200);
+    Rangefinder rangefinder("COM4", 19200);
     rangefinder.PointerOff();
     m_logpanel->m_logtext->AppendText("Pointer was turned OFF \n");
 }
 
 void MainWindow::RFThread() {
-    Rangefinder rangefinder("COM6", 19200);
+    Rangefinder rangefinder("COM4", 19200);
     m_logpanel->m_logtext->AppendText("Measuring distance.. \n");
     wxString measurement = wxString::Format(wxT("Distance: %.2f meters \n"), rangefinder.Measure());
     m_logpanel->m_logtext->AppendText(measurement);
@@ -1098,7 +1102,7 @@ void MainWindow::RFThread() {
 
 void MainWindow::OnRFMeasure(wxCommandEvent& event)
 {
-    Rangefinder rangefinder("COM6", 19200);
+    Rangefinder rangefinder("COM4", 19200);
     m_logpanel->m_logtext->AppendText("Measuring distance.. \n");
     wxString measurement = wxString::Format(wxT("Distance: %.2f meters \n"), rangefinder.Measure());
     m_logpanel->m_logtext->AppendText(measurement);

@@ -44,6 +44,7 @@ public:
     VideoSetPanel* m_videopanel;
     FusionRatioPanel* m_fusionratiopanel;
     LogPanel* m_logpanel;
+    ThermalLensPanel* m_thermalpanel;
     wxPanel* m_parent;
     // file functions
 

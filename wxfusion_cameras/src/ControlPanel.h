@@ -131,3 +131,20 @@ public:
 	wxPanel* m_parent;
 	wxTextCtrl* m_logtext;
 };
+
+class ThermalLensPanel : public wxPanel
+{
+public:
+
+	ThermalLensPanel(wxPanel* parent);
+	wxPanel* m_parent;
+	wxBitmapButton* m_zoomin;
+	wxBitmapButton* m_zoomout;
+	wxBitmapButton* m_focusin;
+	wxBitmapButton* m_focusout;
+	void OnStop(wxMouseEvent& event);
+	void OnZoomIn(wxMouseEvent& event);
+	void OnZoomOut(wxMouseEvent& event);
+	void OnFocusIn(wxMouseEvent& event);
+	void OnFocusOut(wxMouseEvent& event);
+};
