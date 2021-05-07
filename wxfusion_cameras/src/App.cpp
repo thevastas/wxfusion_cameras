@@ -15,8 +15,8 @@ bool App::OnInit()
 {
 	if (!wxApp::OnInit())
 		return false;
-
-	MainWindow* main = new MainWindow(nullptr, window::id::MAINWINDOW, _("Main Window"),wxDefaultPosition, wxSize(1300,900));
+	cv::setBreakOnError(true);
+	MainWindow* main = new MainWindow(nullptr, window::id::MAINWINDOW, _("Main Window"),wxDefaultPosition, wxSize(1300,1100));
 	main->Show();
 	//(new MainWindow)->Show();
 

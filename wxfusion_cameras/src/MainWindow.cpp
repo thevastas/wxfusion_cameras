@@ -759,6 +759,7 @@ void MainWindow::OnCameraFrame(wxThreadEvent& evt)
         m_bitmapPanel->SetBitmap(bitmap, frame->timeGet, timeConvert);
     else
         m_bitmapPanel->SetBitmap(wxBitmap(), 0, 0);
+    
 
     delete frame;
 }

@@ -9,7 +9,7 @@ class ThermalCam
 {
 private:
 	char name[128];
-	int timeout = 1;
+	int timeout = 10;
 	int* meta = (int*)malloc(600);
 	unsigned short* frame = (unsigned short*)malloc(614400);
 	void* paData = NULL;
@@ -17,7 +17,8 @@ private:
 	int i;
 public:
 
-	cv::Mat srcImage;// = cv::Mat::zeros(480, 640, CV_16U);
+	cv::Mat srcImage = cv::Mat::zeros(480, 640, CV_16U);
+	cv::UMat srcuImage;
 	HANDLE handle = NULL;
 	HANDLE Init();
 	void Setup(HANDLE handle);
@@ -29,6 +30,7 @@ public:
 	cv::UMat uimage;
 	cv::UMat uimage2;
 	cv::UMat uimage3;// = cv::UMat(480, 640, CV_16U);
-	cv::UMat outImage;// = cv::Mat::zeros(972, 1296, CV_8UC3);
+	cv::UMat outImage = cv::UMat::zeros(480, 640, CV_8UC3);
+	cv::UMat resizedImage = cv::UMat::zeros(1296, 972, CV_8UC3);// = cv::Mat::zeros(972, 1296, CV_8UC3);
 };
 

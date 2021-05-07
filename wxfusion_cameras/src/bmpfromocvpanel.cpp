@@ -58,6 +58,7 @@ bool wxBitmapFromOpenCVPanel::SetBitmap(const wxBitmap& bitmap, const long timeG
     m_timeConvertBitmap = timeConvert;
 
     Refresh(); Update();
+    if (timeConvert < 30) Sleep(30 - timeConvert);
     return true;
 }
 
