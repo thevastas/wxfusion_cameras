@@ -58,7 +58,7 @@ bool wxBitmapFromOpenCVPanel::SetBitmap(const wxBitmap& bitmap, const long timeG
     m_timeConvertBitmap = timeConvert;
 
     Refresh(); Update();
-    if (timeConvert < 30) Sleep(30 - timeConvert);
+    //if (timeConvert < 30) Sleep(30 - timeConvert);
     return true;
 }
 
@@ -156,7 +156,7 @@ void wxBitmapFromOpenCVPanel::OnChangeOverlayTextColour(wxMouseEvent&)
     Refresh(); Update();
 }
 
-void wxBitmapFromOpenCVPanel::OnChangeOverlayFont(wxMouseEvent&)
+void wxBitmapFromOpenCVPanel::OnChangeOverlayFont(wxMouseEvent&) 
 {
     const wxFont font = wxGetFontFromUser(this, m_overlayFont,
         "Font for text overlay");

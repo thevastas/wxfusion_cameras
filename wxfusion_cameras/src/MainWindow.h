@@ -59,6 +59,7 @@ public:
     void OnNirPoi(wxCommandEvent& event);
     void OnThermalPoi(wxCommandEvent& event);
     void OnCrosshair(wxCommandEvent& event);
+    void OnDCCameras(wxCommandEvent& event);
     // rangefinder functions
     void OnRFMeasure(wxCommandEvent& event);
     void OnRFPointerOn(wxCommandEvent& event);

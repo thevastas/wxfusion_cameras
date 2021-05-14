@@ -96,7 +96,7 @@ cv::UMat ThermalCam::GetFrame(HANDLE handle) {
 
 	//Sleep(30);
 	//return outImage;
-	return resizedImage;
+	return uimage3;
 
 }
 

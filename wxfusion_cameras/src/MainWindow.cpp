@@ -34,6 +34,7 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     EVT_MENU(window::id::NIRPOI, MainWindow::OnNirPoi)
     EVT_MENU(window::id::STREAMINFO, MainWindow::OnStreamInfo)
     EVT_MENU(window::id::CROSSHAIR, MainWindow::OnCrosshair)
+    EVT_MENU(window::id::DCCAMERAS, MainWindow::OnDCCameras)
     EVT_BUTTON(window::id::BMEASUREDISTANCE, MainWindow::OnRFMeasure)
     EVT_RADIOBUTTON(window::id::BZOOMSTREAM, MainWindow::OnIPCamera)
     EVT_RADIOBUTTON(window::id::BNIRSTREAM, MainWindow::OnNIRCamera)
@@ -468,6 +469,7 @@ MainWindow::MainWindow(wxWindow* parent,
     cameraMenu->Append(window::id::ENABLELWIRCAMERA, "Enable LWIR camera");
     cameraMenu->Append(window::id::ENABLENIRCAMERA, "Enable NIR camera");
     cameraMenu->Append(window::id::ENABLEFUSIONCAMERA, "Enable fusion camera");
+    cameraMenu->Append(window::id::DCCAMERAS, "Disconnect cameras");
 
     // VIEW MENU
     viewMenu = new wxMenu();
@@ -475,6 +477,7 @@ MainWindow::MainWindow(wxWindow* parent,
     viewMenu->Append(window::id::THERMALPOI,"Enable thermal POI");
     viewMenu->Append(window::id::NIRPOI, "Enable NIR POI");
     viewMenu->Append(window::id::CROSSHAIR, "Enable crosshair");
+
 
     // OPTIONS MENU
     optionsMenu = new wxMenu();
@@ -585,6 +588,29 @@ void MainWindow::OnThermalPoi(wxCommandEvent& event)
 void MainWindow::OnCrosshair(wxCommandEvent& event)
 {
     wxMessageBox("Crosshair not implemented");
+};
+void MainWindow::OnDCCameras(wxCommandEvent& event)
+{
+    DeleteIPCameraThread();
+    DeleteNIRCameraThread();
+    DeleteLWIRCameraThread();
+    DeleteFusionCameraThread();
+
+
+    if (m_isInitialized) {
+        cameraMenu->Enable(window::id::CAMERAINIT, 1);
+        m_logpanel->m_logtext->AppendText("Disconnecting LWIR camera...\n");
+
+
+        Proxy640USB_DisconnectFromModule(m_lwirhandle);
+        m_logpanel->m_logtext->AppendText("LWIR camera disconnected\n");
+        m_isInitialized = false;
+
+    }
+    else {
+        m_isInitialized = false;
+    }
+
 };
 
 //wxBitmap MainWindow::ConvertMatToBitmap(const cv::UMat& matBitmap, long& timeConvert)
