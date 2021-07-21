@@ -31,7 +31,7 @@ void Rangefinder::Close() {
 
 double Rangefinder::Measure() {
 	double result;
-	char distance_hex;
+	auto distance_hex = 0;
 	//MainWindow* comm = (MainWindow*)GetParent();
 	//MainWindow* comm = (MainWindow*)m_parent->GetParent();
 		//m_parent->GetParent();
@@ -51,6 +51,11 @@ double Rangefinder::Measure() {
 	}
 	else {
 		distance_hex = (data[6] << 8) | (data[7]);
+		//distance_hex = data[5];
+		
+	
+		//result = data[6] * 10 + data[7];
+
 		result = distance_hex / 10;// Combine two bytes into one representing distance
 	}
 	

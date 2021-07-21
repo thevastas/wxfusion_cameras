@@ -1108,20 +1108,20 @@ void MainWindow::OnCameraException(wxThreadEvent& evt)
 
 void MainWindow::OnRFPointerOn(wxCommandEvent& event)
 {
-    Rangefinder rangefinder("COM4", 19200);
+    Rangefinder rangefinder("COM6", 19200);
     rangefinder.PointerOn();
     m_logpanel->m_logtext->AppendText("Pointer was turned ON \n");
 }
 
 void MainWindow::OnRFPointerOff(wxCommandEvent& event)
 {
-    Rangefinder rangefinder("COM4", 19200);
+    Rangefinder rangefinder("COM6", 19200);
     rangefinder.PointerOff();
     m_logpanel->m_logtext->AppendText("Pointer was turned OFF \n");
 }
 
 void MainWindow::RFThread() {
-    Rangefinder rangefinder("COM4", 19200);
+    Rangefinder rangefinder("COM6", 19200);
     m_logpanel->m_logtext->AppendText("Measuring distance.. \n");
     wxString measurement = wxString::Format(wxT("Distance: %.2f meters \n"), rangefinder.Measure());
     m_logpanel->m_logtext->AppendText(measurement);
@@ -1129,7 +1129,7 @@ void MainWindow::RFThread() {
 
 void MainWindow::OnRFMeasure(wxCommandEvent& event)
 {
-    Rangefinder rangefinder("COM4", 19200);
+    Rangefinder rangefinder("COM6", 19200);
     m_logpanel->m_logtext->AppendText("Measuring distance.. \n");
     wxString measurement = wxString::Format(wxT("Distance: %.2f meters \n"), rangefinder.Measure());
     m_logpanel->m_logtext->AppendText(measurement);

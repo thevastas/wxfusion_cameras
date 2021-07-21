@@ -31,6 +31,8 @@
 
 /* NUC Slot Count */
 #define NUC_SLOT_COUNT 8
+/* NUC Bank Count */
+#define NUC_BANK_COUNT 8
 
 /* NUC Info free data size */
 #define NUC_INFO_USER_SIZE 60

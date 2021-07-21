@@ -484,14 +484,14 @@ ThermalLensPanel::ThermalLensPanel(wxPanel* parent) : wxPanel(parent, -1, wxDefa
 
 void ThermalLensPanel::OnStop(wxMouseEvent& event)
 {
-    ThermalZoom pt(m_parent, "COM6", 2400);
+    ThermalZoom pt(m_parent, "COM4", 2400);
     pt.Stop();
     event.Skip();
 }
 
 void ThermalLensPanel::OnZoomIn(wxMouseEvent& event)
 {
-    ThermalZoom pt(m_parent, "COM6", 2400);
+    ThermalZoom pt(m_parent, "COM4", 2400);
     pt.ZoomIn(5);
     //Close();
     event.Skip();
@@ -499,21 +499,21 @@ void ThermalLensPanel::OnZoomIn(wxMouseEvent& event)
 
 void ThermalLensPanel::OnZoomOut(wxMouseEvent& event)
 {
-    ThermalZoom pt(m_parent, "COM6", 2400);
+    ThermalZoom pt(m_parent, "COM4", 2400);
     pt.ZoomOut(5);
     event.Skip();
 }
 
 void ThermalLensPanel::OnFocusIn(wxMouseEvent& event)
 {
-    ThermalZoom pt(m_parent, "COM6", 2400);
+    ThermalZoom pt(m_parent, "COM4", 2400);
     pt.FocusIn(5);
     event.Skip();
 }
 
 void ThermalLensPanel::OnFocusOut(wxMouseEvent& event)
 {
-    ThermalZoom pt(m_parent, "COM6", 2400);
+    ThermalZoom pt(m_parent, "COM4", 2400);
     pt.FocusOut(5);
     event.Skip();
 }

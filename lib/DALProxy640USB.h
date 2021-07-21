@@ -193,6 +193,10 @@ DALProxy640USB_API eDALProxy640USBErr Proxy640USB_GetImage(HANDLE paHandle, unsi
 
 //! @}
 
+#ifndef CONFIG_CUSTOMER
+	DALProxy640USB_API eDALProxy640USBErr Proxy640USB_ReadInternalRegister(HANDLE paHandle, int addr, void *paBuffer, int pauSize);
+	DALProxy640USB_API eDALProxy640USBErr Proxy640USB_WriteInternalRegister(HANDLE paHandle, int addr, void *paBuffer, int pauSize);
+#endif
 
 /** \addtogroup Module_Control
  *
