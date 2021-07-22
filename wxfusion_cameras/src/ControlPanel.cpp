@@ -461,24 +461,49 @@ ThermalLensPanel::ThermalLensPanel(wxPanel* parent) : wxPanel(parent, -1, wxDefa
     int ptzbuttonoriginy = 10;
 
 
-    m_zoomin = new wxBitmapButton(this, window::id::BTZOOMIN, wxBitmap(wxT("img/arrow_up.png"), wxBITMAP_TYPE_PNG), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_zoomin = new wxButton(this, window::id::BZOOMIN, wxT("+"), wxPoint(130, ptzbuttonoriginy), wxSize(ptzbuttonsize, ptzbuttonsize));
     m_zoomin->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(ThermalLensPanel::OnZoomIn), NULL, this);
     m_zoomin->Connect(wxEVT_LEFT_UP, wxMouseEventHandler(ThermalLensPanel::OnStop), NULL, this);
 
-    m_focusin = new wxBitmapButton(this, window::id::BTFOCUSIN, wxBitmap(wxT("img/arrow_left.png"), wxBITMAP_TYPE_PNG), wxPoint(ptzbuttonoriginx + ptzbuttonsize + ptzbuttonspacing, ptzbuttonoriginy), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_focusin = new wxButton(this, window::id::BFOCUSIN, wxT("+"), wxPoint(130, ptzbuttonoriginy + ptzbuttonsize + ptzbuttonspacing), wxSize(ptzbuttonsize, ptzbuttonsize));
     m_focusin->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(ThermalLensPanel::OnFocusIn), NULL, this);
     m_focusin->Connect(wxEVT_LEFT_UP, wxMouseEventHandler(ThermalLensPanel::OnStop), NULL, this);
 
+    m_textzoom = new wxStaticText(this, -1, wxT("LWIR Zoom"), wxPoint(50, ptzbuttonoriginy + 6));
+    m_textzoom->SetForegroundColour(wxColor(214, 214, 214));
 
+    m_textfocus = new wxStaticText(this, -1, wxT("LWIR Focus"), wxPoint(50, ptzbuttonoriginy + ptzbuttonsize + ptzbuttonspacing + 6));
+    m_textfocus->SetForegroundColour(wxColor(214, 214, 214));
 
-    m_zoomout = new wxBitmapButton(this, window::id::BTZOOMOUT, wxBitmap(wxT("img/arrow_down.png"), wxBITMAP_TYPE_PNG), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy +  (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_zoomout = new wxButton(this, window::id::BZOOMOUT, wxT("-"), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy), wxSize(ptzbuttonsize, ptzbuttonsize));
     m_zoomout->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(ThermalLensPanel::OnZoomOut), NULL, this);
     m_zoomout->Connect(wxEVT_LEFT_UP, wxMouseEventHandler(ThermalLensPanel::OnStop), NULL, this);
 
 
-    m_focusout = new wxBitmapButton(this, window::id::BTFOCUSOUT, wxBitmap(wxT("img/arrow_right.png"), wxBITMAP_TYPE_PNG), wxPoint(ptzbuttonoriginx + ptzbuttonsize + ptzbuttonspacing, ptzbuttonoriginy +  (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    m_focusout = new wxButton(this, window::id::BFOCUSOUT, wxT("-"), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy +  (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
     m_focusout->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(ThermalLensPanel::OnFocusOut), NULL, this);
     m_focusout->Connect(wxEVT_LEFT_UP, wxMouseEventHandler(ThermalLensPanel::OnStop), NULL, this);
+
+    //m_zoomin = new wxBitmapButton(this, window::id::BTZOOMIN, wxBitmap(wxT("img/arrow_up.png"), wxBITMAP_TYPE_PNG), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy), wxSize(ptzbuttonsize, ptzbuttonsize));
+    //m_zoomin->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(ThermalLensPanel::OnZoomIn), NULL, this);
+    //m_zoomin->Connect(wxEVT_LEFT_UP, wxMouseEventHandler(ThermalLensPanel::OnStop), NULL, this);
+
+    //m_focusin = new wxBitmapButton(this, window::id::BTFOCUSIN, wxBitmap(wxT("img/arrow_left.png"), wxBITMAP_TYPE_PNG), wxPoint(ptzbuttonoriginx + ptzbuttonsize + ptzbuttonspacing, ptzbuttonoriginy), wxSize(ptzbuttonsize, ptzbuttonsize));
+    //m_focusin->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(ThermalLensPanel::OnFocusIn), NULL, this);
+    //m_focusin->Connect(wxEVT_LEFT_UP, wxMouseEventHandler(ThermalLensPanel::OnStop), NULL, this);
+
+
+
+    //m_zoomout = new wxBitmapButton(this, window::id::BTZOOMOUT, wxBitmap(wxT("img/arrow_down.png"), wxBITMAP_TYPE_PNG), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy + (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    //m_zoomout->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(ThermalLensPanel::OnZoomOut), NULL, this);
+    //m_zoomout->Connect(wxEVT_LEFT_UP, wxMouseEventHandler(ThermalLensPanel::OnStop), NULL, this);
+
+
+    //m_focusout = new wxBitmapButton(this, window::id::BTFOCUSOUT, wxBitmap(wxT("img/arrow_right.png"), wxBITMAP_TYPE_PNG), wxPoint(ptzbuttonoriginx + ptzbuttonsize + ptzbuttonspacing, ptzbuttonoriginy + (ptzbuttonsize + ptzbuttonspacing)), wxSize(ptzbuttonsize, ptzbuttonsize));
+    //m_focusout->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(ThermalLensPanel::OnFocusOut), NULL, this);
+    //m_focusout->Connect(wxEVT_LEFT_UP, wxMouseEventHandler(ThermalLensPanel::OnStop), NULL, this);
+
+
 
 }
 

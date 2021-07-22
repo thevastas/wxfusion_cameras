@@ -138,10 +138,12 @@ public:
 
 	ThermalLensPanel(wxPanel* parent);
 	wxPanel* m_parent;
-	wxBitmapButton* m_zoomin;
-	wxBitmapButton* m_zoomout;
-	wxBitmapButton* m_focusin;
-	wxBitmapButton* m_focusout;
+	wxButton* m_zoomin;
+	wxButton* m_zoomout;
+	wxButton* m_focusin;
+	wxButton* m_focusout;
+	wxStaticText* m_textzoom;
+	wxStaticText* m_textfocus;
 	void OnStop(wxMouseEvent& event);
 	void OnZoomIn(wxMouseEvent& event);
 	void OnZoomOut(wxMouseEvent& event);
