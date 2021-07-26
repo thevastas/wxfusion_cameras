@@ -35,6 +35,7 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     EVT_MENU(window::id::STREAMINFO, MainWindow::OnStreamInfo)
     EVT_MENU(window::id::CROSSHAIR, MainWindow::OnCrosshair)
     EVT_MENU(window::id::DCCAMERAS, MainWindow::OnDCCameras)
+    EVT_MENU(wxID_OPEN, MainWindow::OnOpen)
     EVT_BUTTON(window::id::BMEASUREDISTANCE, MainWindow::OnRFMeasure)
     EVT_RADIOBUTTON(window::id::BZOOMSTREAM, MainWindow::OnIPCamera)
     EVT_RADIOBUTTON(window::id::BNIRSTREAM, MainWindow::OnNIRCamera)
@@ -45,6 +46,8 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     //EVT_BUTTON(window::id::BPTZSAVEPRESET, PTZPanel::OnPTSetPreset)
 
 END_EVENT_TABLE()
+
+
 
 // A frame was retrieved from WebCam or IP Camera.
 wxDEFINE_EVENT(wxEVT_IPCAMERA_FRAME, wxThreadEvent);
@@ -68,6 +71,132 @@ wxDEFINE_EVENT(wxEVT_NIRCAMERA_EXCEPTION, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_FUSIONCAMERA_FRAME, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_FUSIONCAMERA_EMPTY, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_FUSIONCAMERA_EXCEPTION, wxThreadEvent);
+
+class Scripter : public wxFrame, public wxThread
+{
+public:
+    Scripter(wxPanel* parent, wxString file);
+    ~Scripter() {
+    };
+    //~Scripter()
+    //{
+        // it's better to do any thread cleanup in the OnClose()
+        // event handler, rather than in the destructor.
+        // This is because the event loop for a top-level window is not
+        // active anymore when its destructor is called and if the thread
+        // sends events when ending, they won't be processed unless
+        // you ended the thread from OnClose.
+        // See @ref overview_windowdeletion for more info.
+    //}
+    //void DoStartALongTask(wxPanel* parent);
+    void OnThreadUpdate(wxThreadEvent& evt);
+    void OnClose(wxCloseEvent& evt);
+    wxPanel* m_parent;
+    wxString m_filename;
+protected:
+    
+    virtual wxThread::ExitCode Entry();
+    // the output data of the Entry() routine:
+    //char m_data[1024];
+    //wxCriticalSection m_dataCS; // protects field above
+    DECLARE_EVENT_TABLE();
+};
+
+Scripter::Scripter(wxPanel* parent, wxString file) :
+    m_parent(parent), m_filename(file)
+{
+    // It is also possible to use event tables, but dynamic binding is simpler.
+    Bind(wxEVT_THREAD, &Scripter::OnThreadUpdate, this);
+}
+
+BEGIN_EVENT_TABLE(Scripter, wxFrame)
+EVT_CLOSE(Scripter::OnClose)
+END_EVENT_TABLE()
+
+//void Scripter::DoStartALongTask(wxPanel* parent)
+//{
+//    m_parent = parent;
+//    // we want to start a long task, but we don't want our GUI to block
+//    // while it's executed, so we use a thread to do it.
+//    if (CreateThread(wxTHREAD_JOINABLE) != wxTHREAD_NO_ERROR)
+//    {
+//        wxLogError("Could not create the worker thread!");
+//        return;
+//    }
+//    // go!
+//    if (GetThread()->Run() != wxTHREAD_NO_ERROR)
+//    {
+//        wxLogError("Could not run the worker thread!");
+//        return;
+//    }
+//}
+wxThread::ExitCode Scripter::Entry()
+{
+    MainWindow* myParent = (MainWindow*)m_parent->GetParent();
+    
+    
+    
+    //MainWindow* myParent = (MainWindow*)GetParent();
+    // VERY IMPORTANT: this function gets executed in the secondary thread context!
+    // Do not call any GUI function inside this function; rather use wxQueueEvent():
+    int offset = 0;
+    // here we do our long task, periodically calling TestDestroy():
+    //myParent->m_logpanel->m_logtext->AppendText("Script running... \n");
+    myParent->m_logpanel->m_logtext->AppendText(m_filename);
+    while (!TestDestroy())
+    {
+        // since this Entry() is implemented in MyFrame context we don't
+        // need any pointer to access the m_data, m_processedData, m_dataCS
+        // variables... very nice!
+        // this is an example of the generic structure of a download thread:
+        
+        
+        
+        //char buffer[1024];
+        //download_chunk(buffer, 1024);     // this takes time...
+        {
+            //wxMessageBox("Instruction set");
+            ////////myParent->m_logpanel->m_logtext->AppendText("Script running... \n");
+            //parent->m_logpanel->m_logtext->AppendText("Script running... \n");
+            // ensure no one reads m_data while we write it
+            //wxCriticalSectionLocker lock(m_dataCS);
+            //memcpy(m_data + offset, buffer, 1024);
+            //offset += 1024;
+        }
+        
+        
+        
+        
+        // signal to main thread that download is complete
+        wxQueueEvent(GetEventHandler(), new wxThreadEvent());
+    }
+    // TestDestroy() returned true (which means the main thread asked us
+    // to terminate as soon as possible) or we ended the long task...
+    return (wxThread::ExitCode)0;
+}
+void Scripter::OnClose(wxCloseEvent&)
+{
+    // important: before terminating, we _must_ wait for our joinable
+    // thread to end, if it's running; in fact it uses variables of this
+    // instance and posts events to *this event handler
+    //if (GetThread() &&      // DoStartALongTask() may have not been called
+    //    GetThread()->IsRunning())
+    //    GetThread()->Wait();
+    //Destroy();
+}
+void Scripter::OnThreadUpdate(wxThreadEvent& evt)
+{
+    // ...do something... e.g. m_pGauge->Pulse();
+    // read some parts of m_data just for fun:
+    //wxCriticalSectionLocker lock(m_dataCS);
+    //wxPrintf("%c", m_data[100]);
+}
+
+
+
+
+
+
 
 
 //
@@ -448,7 +577,15 @@ MainWindow::MainWindow(wxWindow* parent,
     //FILE MENU
     fileMenu = new wxMenu();
     menuBar->Append(fileMenu, _("&File"));
+    
     fileMenu->Append(wxID_NEW);
+
+
+    wxMenuItem* openitem = new wxMenuItem(fileMenu, wxID_OPEN);
+    openitem->SetBitmap(wxArtProvider::GetBitmap("wxART_FILE_OPEN"));
+    openitem->SetItemLabel("Open script file");
+    fileMenu->Append(openitem);
+    
     wxMenuItem* quitItem = new wxMenuItem(fileMenu, wxID_EXIT);
     quitItem->SetBitmap(wxArtProvider::GetBitmap("wxART_QUIT"));
     fileMenu->Append(quitItem);
@@ -1133,6 +1270,27 @@ void MainWindow::OnRFMeasure(wxCommandEvent& event)
     m_logpanel->m_logtext->AppendText("Measuring distance.. \n");
     wxString measurement = wxString::Format(wxT("Distance: %.2f meters \n"), rangefinder.Measure());
     m_logpanel->m_logtext->AppendText(measurement);
+}
+
+void MainWindow::OnOpen(wxCommandEvent& event)
+{
+    wxString fileName;
+    wxFileDialog* openFileDialog = new wxFileDialog(this);
+    if (openFileDialog->ShowModal() == wxID_OK) {
+        fileName = openFileDialog->GetPath();
+    }
+    m_scripterThread = new Scripter(m_parent,fileName);
+    if (m_scripterThread->Run() != wxTHREAD_NO_ERROR)
+    {
+        delete m_scripterThread;
+        m_scripterThread = nullptr;
+        m_logpanel->m_logtext->AppendText("Could not create the thread needed to retrieve the images from a NIR or LWIR camera.\n");
+    }
+    else {
+        m_logpanel->m_logtext->AppendText("Launching Script file... \n");
+
+    }
+    //wxLogError("Works.");
 }
 
 

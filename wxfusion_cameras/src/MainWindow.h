@@ -22,6 +22,7 @@ class CameraThread;
 class LWIRCameraThread;
 class NIRCameraThread;
 class FusionCameraThread;
+class Scripter;
 
 class MainWindow: public wxFrame
 {
@@ -54,6 +55,7 @@ public:
     wxMenu* cameraMenu;
     wxMenu* viewMenu;
     
+    void OnOpen(wxCommandEvent& event);
     void OnQuit(wxCommandEvent& event);
     // view functions
     void OnNirPoi(wxCommandEvent& event);
@@ -105,6 +107,9 @@ private:
     std::shared_ptr<peak::core::DataStream> m_dataStream{ nullptr };
 
     FusionCameraThread* m_fusioncameraThread{ nullptr };
+
+    Scripter* m_scripterThread{ nullptr };
+
 
     wxBitmapFromOpenCVPanel* m_bitmapPanel;
     wxSlider* m_videoSlider;
