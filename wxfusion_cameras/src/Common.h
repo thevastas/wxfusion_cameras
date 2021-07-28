@@ -20,3 +20,8 @@
 #include <wx/textctrl.h>
 #include "easylogging.h"
 #include "id.h"
+#include <wx/textfile.h>
+#include <wx/arrstr.h> 
+#include <map>
+#include <functional>
+#include <cstdio>

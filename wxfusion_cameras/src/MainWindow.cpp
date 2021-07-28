@@ -72,6 +72,31 @@ wxDEFINE_EVENT(wxEVT_FUSIONCAMERA_FRAME, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_FUSIONCAMERA_EMPTY, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_FUSIONCAMERA_EXCEPTION, wxThreadEvent);
 
+
+class Functions
+{
+public:
+    Functions(wxPanel* parent);
+    void OnRFPointerOn();
+    void wait(int i) { Sleep(i*1000); }
+    void testFunc2(int i) { std::cout << "func2\n"; }
+    wxPanel* m_parent;
+    MainWindow* myParent;
+};
+
+void Functions::OnRFPointerOn()
+{
+    Rangefinder rangefinder("COM6", 19200);
+    rangefinder.PointerOn();
+    myParent->m_logpanel->m_logtext->AppendText("Pointer was turned ON \n");
+}
+
+Functions::Functions(wxPanel* parent) :
+    m_parent(parent)
+{
+    myParent = (MainWindow*)m_parent->GetParent();
+}
+
 class Scripter : public wxFrame, public wxThread
 {
 public:
@@ -89,10 +114,14 @@ public:
         // See @ref overview_windowdeletion for more info.
     //}
     //void DoStartALongTask(wxPanel* parent);
+    //void pause(int);
     void OnThreadUpdate(wxThreadEvent& evt);
     void OnClose(wxCloseEvent& evt);
     wxPanel* m_parent;
     wxString m_filename;
+    wxTextFile tfile;
+    wxString        str;
+    wxArrayString arrstr;
 protected:
     
     virtual wxThread::ExitCode Entry();
@@ -105,6 +134,13 @@ protected:
 Scripter::Scripter(wxPanel* parent, wxString file) :
     m_parent(parent), m_filename(file)
 {
+    typedef void (*funcPointer)(int);
+
+    tfile.Open(m_filename);
+
+    
+
+
     // It is also possible to use event tables, but dynamic binding is simpler.
     Bind(wxEVT_THREAD, &Scripter::OnThreadUpdate, this);
 }
@@ -130,11 +166,15 @@ END_EVENT_TABLE()
 //        return;
 //    }
 //}
+
+//void Scripter::pause(int) {
+//
+//}
 wxThread::ExitCode Scripter::Entry()
 {
     MainWindow* myParent = (MainWindow*)m_parent->GetParent();
-    
-    
+    Functions fs(m_parent);
+    //ScriptFunctions sfunctions;
     
     //MainWindow* myParent = (MainWindow*)GetParent();
     // VERY IMPORTANT: this function gets executed in the secondary thread context!
@@ -145,6 +185,123 @@ wxThread::ExitCode Scripter::Entry()
     myParent->m_logpanel->m_logtext->AppendText(m_filename);
     while (!TestDestroy())
     {
+
+
+
+        for (str = tfile.GetFirstLine(); !tfile.Eof(); str = tfile.GetNextLine())
+        {
+            //str = tfile.GetNextLine();
+            arrstr=wxSplit(str, '=');
+            int cval = wxAtoi(arrstr[1]);
+            if (!arrstr.IsEmpty()) {
+                myParent->m_logpanel->m_logtext->AppendText("\n");
+                myParent->m_logpanel->m_logtext->AppendText(arrstr[0]);
+                myParent->m_logpanel->m_logtext->AppendText("   ");
+                myParent->m_logpanel->m_logtext->AppendText(arrstr[1]);
+                if (arrstr[0].ToStdString() == "loop") {
+                    
+                    if (wxAtoi(arrstr[1]) > 0) {
+                        int curline = tfile.GetCurrentLine();
+                        int loopsize = wxAtoi(arrstr[1]);
+                        int i = 0;
+                        while (i < loopsize) {
+
+                            //myParent->m_logpanel->m_logtext->AppendText(wxString::Format(wxT("\n Loop %i of %i: "), i+1, cval));
+                            str = tfile.GetNextLine();
+                            
+                            arrstr = wxSplit(str, '=');
+                                if (arrstr[0].ToStdString() == "wait") {
+                                    if (wxAtoi(arrstr[1]) > 0) {
+                                        myParent->m_logpanel->m_logtext->AppendText("\n");
+                                        myParent->m_logpanel->m_logtext->AppendText("Sleeping for ");
+                                        myParent->m_logpanel->m_logtext->AppendText(arrstr[1]);
+                                        myParent->m_logpanel->m_logtext->AppendText(" seconds");
+                                        //sfunctions.wait(wxAtoi(arrstr[1]));
+                                        wxThread::Sleep(wxAtoi(arrstr[1]) * 1000);
+                                    }
+                                    else {
+                                        //invalid variable
+                                    }
+
+                            }
+                                else if (arrstr[0].ToStdString() == "loop" && arrstr[1].ToStdString() == "0") {
+                                    tfile.GoToLine(curline);
+                                    i++;
+                                }
+                                else if (arrstr[0].ToStdString() == "pos") {
+                                    
+                                    if (wxAtoi(arrstr[1]) <= 10 && wxAtoi(arrstr[1]) > 0) {
+                                        myParent->m_logpanel->m_logtext->AppendText("\n");
+                                        myParent->m_logpanel->m_logtext->AppendText("Going to position: ");
+                                        myParent->m_logpanel->m_logtext->AppendText(arrstr[1]);
+
+
+                                        PanTilt pt("COM5", 2400);
+                                        pt.Preset(wxAtoi(arrstr[1]));
+                                    }
+                                    else {
+                                        //invalid variable
+                                    }
+                                }
+                                else if (arrstr[0].ToStdString() == "rfp") {
+                                    if (arrstr[1].ToStdString() == "1") {
+                                        fs.OnRFPointerOn();
+                                        //myParent->m_logpanel->m_logtext->AppendText("\n");
+                                        //myParent->m_logpanel->m_logtext->AppendText("Turning pointer ON");
+                                        //Rangefinder rangefinder("COM6", 19200);
+                                        //rangefinder.PointerOn();
+                                    }
+                                    else if (arrstr[1].ToStdString() == "0") {
+                                        myParent->m_logpanel->m_logtext->AppendText("\n");
+                                        myParent->m_logpanel->m_logtext->AppendText("Turning pointer OFF");
+                                        Rangefinder rangefinder("COM6", 19200);
+                                        rangefinder.PointerOff();
+                                    }
+                                    else {
+                                        //invalid variable
+                                    }
+                                }
+                                else if (arrstr[0].ToStdString() == "rfd") {
+                                    if (arrstr[1].ToStdString() == "1") {
+                                        Rangefinder rangefinder("COM6", 19200);
+                                        myParent->m_logpanel->m_logtext->AppendText("\n");
+                                        myParent->m_logpanel->m_logtext->AppendText("Distance:");
+                                        myParent->m_logpanel->m_logtext->AppendText(wxString::Format(wxT(" %f"), rangefinder.Measure()));
+                                        myParent->m_logpanel->m_logtext->AppendText(" meters.");
+                                        // TODO
+                                        
+                                    }
+                                    else {
+                                        //invalid variable
+                                    }
+                                }
+
+                                else {
+                                    myParent->m_logpanel->m_logtext->AppendText("\n");
+                                    myParent->m_logpanel->m_logtext->AppendText(str);
+                                }
+
+                        }
+                    }
+
+
+
+
+                    else wxThread::Delete();
+                                    
+
+
+
+
+                }
+
+                
+                
+
+
+            }
+        }
+
         // since this Entry() is implemented in MyFrame context we don't
         // need any pointer to access the m_data, m_processedData, m_dataCS
         // variables... very nice!
@@ -190,6 +347,8 @@ void Scripter::OnThreadUpdate(wxThreadEvent& evt)
     // read some parts of m_data just for fun:
     //wxCriticalSectionLocker lock(m_dataCS);
     //wxPrintf("%c", m_data[100]);
+
+
 }
 
 
@@ -682,6 +841,13 @@ MainWindow::MainWindow(wxWindow* parent,
 
     m_parent->SetSizerAndFit(sizer);
 
+
+
+
+
+
+
+
     Clear();
     Bind(wxEVT_IPCAMERA_FRAME, &MainWindow::OnCameraFrame, this);
     Bind(wxEVT_IPCAMERA_EMPTY, &MainWindow::OnCameraEmpty, this);
@@ -807,7 +973,7 @@ void MainWindow::InitializeCameras(wxCommandEvent& event)
     DeleteFusionCameraThread();
 
 
-    if (!m_isInitialized && !m_onlyZoom) {
+    if (!m_isInitialized) {
         cameraMenu->Enable(window::id::CAMERAINIT, 0);
         m_logpanel->m_logtext->AppendText("Initializing cameras...\n");
         m_dataStream = nir.OpenDevice();
@@ -823,9 +989,9 @@ void MainWindow::InitializeCameras(wxCommandEvent& event)
         m_isInitialized = true;
 
     }
-    else {
-        m_isInitialized = false;
-    }
+    //else {
+    //    m_isInitialized = false;
+    //}
 
 }
 
