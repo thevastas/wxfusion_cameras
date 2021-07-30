@@ -66,7 +66,7 @@ public:
     void OnRFMeasure(wxCommandEvent& event);
     void OnRFPointerOn(wxCommandEvent& event);
     void OnRFPointerOff(wxCommandEvent& event);
-    void RFThread();
+    //void RFThread();
     // camera functions
     void OnConnectZoom(wxCommandEvent& event);
     void InitializeCameras(wxCommandEvent& event);
@@ -79,6 +79,7 @@ public:
     bool m_onlyZoom = false;
     cv::UMat m_ocvmat;
     // pan tilt
+
 
 private:
     enum Mode //for the future cameras
@@ -99,14 +100,16 @@ private:
 
     cv::VideoCapture* m_videoCapture{ nullptr };
     CameraThread* m_cameraThread{ nullptr };
-    
+
     LWIRCameraThread* m_lwircameraThread{ nullptr };
     HANDLE m_lwirhandle;
-    
+
     NIRCameraThread* m_nircameraThread{ nullptr };
     std::shared_ptr<peak::core::DataStream> m_dataStream{ nullptr };
 
     FusionCameraThread* m_fusioncameraThread{ nullptr };
+    
+
 
     Scripter* m_scripterThread{ nullptr };
 
