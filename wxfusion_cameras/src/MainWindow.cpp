@@ -47,7 +47,10 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
 
 END_EVENT_TABLE()
 
-
+wxDEFINE_EVENT(wxEVT_CAMERACHANGED_IP, wxCommandEvent);
+wxDEFINE_EVENT(wxEVT_CAMERACHANGED_LWIR, wxCommandEvent);
+wxDEFINE_EVENT(wxEVT_CAMERACHANGED_NIR, wxCommandEvent);
+wxDEFINE_EVENT(wxEVT_CAMERACHANGED_FUSION, wxCommandEvent);
 
 // A frame was retrieved from WebCam or IP Camera.
 wxDEFINE_EVENT(wxEVT_IPCAMERA_FRAME, wxThreadEvent);
@@ -71,6 +74,93 @@ wxDEFINE_EVENT(wxEVT_NIRCAMERA_EXCEPTION, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_FUSIONCAMERA_FRAME, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_FUSIONCAMERA_EMPTY, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_FUSIONCAMERA_EXCEPTION, wxThreadEvent);
+
+//class CameraSwitcher : public wxThread {
+//public:
+//    CameraSwitcher(const MainWindow& aObj) : aRef(aObj) {
+//
+//    };
+//    wxThread::ExitCode Entry(wxThreadEvent& evt,MainWindow& instance);
+//    void OnClose(wxCloseEvent&);
+//private:
+//    const CameraSwitcher& aRef;
+//protected:
+//    CameraSwitcher* m_pThread;
+//    wxCriticalSection m_pThreadCS;    // protects the m_pThread pointer
+//    friend class CameraSwitcher;            // allow it to access our m_pThread
+//    //wxDECLARE_EVENT_TABLE();
+//};
+////wxBEGIN_EVENT_TABLE(CameraSwitcher, wxFrame)
+//////EVT_CLOSE(CameraSwitcher::OnClose)
+////EVT_MENU(Minimal_Start, CameraSwitcher::DoStartThread)
+////EVT_COMMAND(wxID_ANY, wxEVT_COMMAND_MYTHREAD_UPDATE, CameraSwitcher::OnThreadUpdate)
+////EVT_COMMAND(wxID_ANY, wxEVT_COMMAND_MYTHREAD_COMPLETED, MyCameraSwitcherFrame::OnThreadCompletion)
+////wxEND_EVENT_TABLE()
+//
+//wxThread::ExitCode CameraSwitcher::Entry(wxThreadEvent& evt, MainWindow& instance) {
+//    if (instance.current_mode != instance.m_mode) {
+//        if (instance.m_mode == instance.IPCamera) {
+//            if (instance.StartIPCameraCapture(instance.address))
+//            {
+//                instance.m_mode = instance.NIRCamera;
+//            }
+//            instance.m_logpanel->m_logtext->AppendText("Switching to the VIS camera.\n");
+//            instance.current_mode = instance.IPCamera;
+//        }
+//        else if (instance.m_mode == instance.NIRCamera) {
+//            if (instance.StartNIRCameraCapture())
+//            {
+//                instance.m_mode = instance.NIRCamera;
+//            }
+//            instance.m_logpanel->m_logtext->AppendText("Switching to the NIR camera.\n");
+//            instance.current_mode = instance.NIRCamera;
+//        }
+//        else if (instance.m_mode == instance.LWIRCamera) {
+//            if (instance.StartLWIRCameraCapture(instance.m_lwirhandle))
+//            {
+//                instance.m_mode = instance.NIRCamera;
+//            }
+//            instance.m_logpanel->m_logtext->AppendText("Switching to the LWIR camera.\n");
+//            instance.current_mode = instance.LWIRCamera;
+//        }
+//        else if (instance.m_mode == instance.FuseNIRLWIR) {
+//            if (instance.StartFusionCameraCapture())
+//            {
+//                instance.m_mode = instance.NIRCamera;
+//            }
+//            instance.m_logpanel->m_logtext->AppendText("Switching to the Fusion camera.\n");
+//            instance.current_mode = instance.FuseNIRLWIR;
+//        }
+//    }
+//
+//    return static_cast<wxThread::ExitCode>(nullptr);
+//}
+
+
+//void CameraSwitcher::OnClose(wxCloseEvent&)
+//{
+//    {
+//        wxCriticalSectionLocker enter(m_pThreadCS);
+//        if (m_pThread)         // does the thread still exist?
+//        {
+//            wxMessageOutputDebug().Printf("MYFRAME: deleting thread");
+//            if (m_pThread->Delete() != wxTHREAD_NO_ERROR)
+//                wxLogError("Can't delete the thread!");
+//        }
+//    }       // exit from the critical section to give the thread
+//            // the possibility to enter its destructor
+//            // (which is guarded with m_pThreadCS critical section!)
+//    while (1)
+//    {
+//        { // was the ~MyThread() function executed?
+//            wxCriticalSectionLocker enter(m_pThreadCS);
+//            if (!m_pThread) break;
+//        }
+//        // wait for thread completion
+//        wxThread::This()->Sleep(1);
+//    }
+//    Destroy();
+//}
 
 
 //
@@ -609,7 +699,7 @@ void Functions::RFMeasure()
 class Scripter : public wxFrame, public wxThread
 {
 public:
-    Scripter(wxPanel* parent, wxString file);
+    Scripter(wxPanel* parent, wxString file, wxEvtHandler* eventSink);
     ~Scripter() {
     };
     //~Scripter()
@@ -632,16 +722,16 @@ public:
     wxString        str;
     wxArrayString arrstr;
 protected:
-    
-    virtual wxThread::ExitCode Entry();
+    wxEvtHandler* m_eventSink{ nullptr };
+    ExitCode Entry() override;
     // the output data of the Entry() routine:
     //char m_data[1024];
     //wxCriticalSection m_dataCS; // protects field above
     DECLARE_EVENT_TABLE();
 };
 
-Scripter::Scripter(wxPanel* parent, wxString file) :
-    m_parent(parent), m_filename(file)
+Scripter::Scripter(wxPanel* parent, wxString file, wxEvtHandler* eventSink) : wxThread(wxTHREAD_JOINABLE),
+    m_parent(parent), m_filename(file), m_eventSink(eventSink)
 {
     typedef void (*funcPointer)(int);
 
@@ -751,6 +841,7 @@ wxThread::ExitCode Scripter::Entry()
                                         pt.Preset(wxAtoi(arrstr[1]));
                                     }
                                     else {
+                                        
                                         //invalid variable
                                     }
                                 }
@@ -783,7 +874,31 @@ wxThread::ExitCode Scripter::Entry()
                                         
                                     }
                                     else {
+                                        //myParent->m_videopanel->m_zoomstream->SetValue(true);
                                         //invalid variable
+                                    }
+                                }
+
+                                else if (arrstr[0].ToStdString() == "cam") {
+                                    if (arrstr[1].ToStdString() == "vis") {
+                                        myParent->m_logpanel->m_logtext->AppendText("Turning on the VIS camera");
+                                        wxThreadEvent* evt = new wxThreadEvent(wxEVT_CAMERACHANGED_IP);
+                                        m_eventSink->QueueEvent(evt);
+                                    }
+                                    else if (arrstr[1].ToStdString() == "nir") {
+                                        myParent->m_logpanel->m_logtext->AppendText("Turning on the NIR camera");
+                                        wxThreadEvent* evt = new wxThreadEvent(wxEVT_CAMERACHANGED_NIR);
+                                        m_eventSink->QueueEvent(evt);
+                                    }
+                                    else if (arrstr[1].ToStdString() == "lwir") {
+                                        myParent->m_logpanel->m_logtext->AppendText("Turning on the LWIR camera");
+                                        wxThreadEvent* evt = new wxThreadEvent(wxEVT_CAMERACHANGED_LWIR);
+                                        m_eventSink->QueueEvent(evt);
+                                    }
+                                    else if (arrstr[1].ToStdString() == "fus") {
+                                        myParent->m_logpanel->m_logtext->AppendText("Turning on the Fusion camera");
+                                        wxThreadEvent* evt = new wxThreadEvent(wxEVT_CAMERACHANGED_FUSION);
+                                        m_eventSink->QueueEvent(evt);
                                     }
                                 }
 
@@ -836,7 +951,7 @@ wxThread::ExitCode Scripter::Entry()
         
         
         // signal to main thread that download is complete
-        wxQueueEvent(GetEventHandler(), new wxThreadEvent());
+        /////wxQueueEvent(GetEventHandler(), new wxThreadEvent());
     }
     // TestDestroy() returned true (which means the main thread asked us
     // to terminate as soon as possible) or we ended the long task...
@@ -1011,6 +1126,10 @@ MainWindow::MainWindow(wxWindow* parent,
 
 
     Clear();
+    Bind(wxEVT_CAMERACHANGED_IP, &MainWindow::OnIPCamera, this);
+    Bind(wxEVT_CAMERACHANGED_LWIR, &MainWindow::OnLWIRCamera, this);
+    Bind(wxEVT_CAMERACHANGED_NIR, &MainWindow::OnNIRCamera, this);
+    Bind(wxEVT_CAMERACHANGED_FUSION, &MainWindow::OnFusionCamera, this);
     Bind(wxEVT_IPCAMERA_FRAME, &MainWindow::OnCameraFrame, this);
     Bind(wxEVT_IPCAMERA_EMPTY, &MainWindow::OnCameraEmpty, this);
     Bind(wxEVT_IPCAMERA_EXCEPTION, &MainWindow::OnCameraException, this);
@@ -1182,10 +1301,10 @@ void MainWindow::InitializeCameras(wxCommandEvent& event)
 
 // IP CAMERA 
 
-bool MainWindow::StartIPCameraCapture(const wxString& address, const wxSize& resolution,
+bool MainWindow::StartIPCameraCapture(wxString& address, const wxSize& resolution,
     bool useMJPEG)
 {
-    Functions fs(m_parent);// = new Functions;
+    //Functions fs(m_parent);// = new Functions;
 
     const bool        isDefaultWebCam = address.empty();
     cv::VideoCapture* cap = nullptr;
@@ -1238,7 +1357,7 @@ bool MainWindow::StartIPCameraThread()
 }
 void MainWindow::OnIPCamera(wxCommandEvent& event)
 {
-    Functions fs(m_parent);
+    //Functions fs(m_parent);
     m_onlyZoom = true;
     //InitializeCameras(event);
     wxArrayString strings;
@@ -1249,7 +1368,7 @@ void MainWindow::OnIPCamera(wxCommandEvent& event)
     m_videopanel->m_pip->Set(strings);
 
 
-    static wxString address = "rtsp://192.168.30.168/main";
+    
     if (StartIPCameraCapture(address))
     {
         m_mode = IPCamera;
@@ -1353,6 +1472,9 @@ void MainWindow::OnLWIRCamera(wxCommandEvent& event)
         //optionsMenu->Enable(window::id::STREAMINFO, 1);
     }
 }
+
+
+
 void MainWindow::OnLWIRCameraFrame(wxThreadEvent& evt)
 {
     LWIRCameraThread::CameraFrame* frame = evt.GetPayload<LWIRCameraThread::CameraFrame*>();
@@ -1640,12 +1762,12 @@ void MainWindow::OnOpen(wxCommandEvent& event)
     if (openFileDialog->ShowModal() == wxID_OK) {
         fileName = openFileDialog->GetPath();
     }
-    m_scripterThread = new Scripter(m_parent,fileName);
+    m_scripterThread = new Scripter(m_parent,fileName,this);
     if (m_scripterThread->Run() != wxTHREAD_NO_ERROR)
     {
         delete m_scripterThread;
         m_scripterThread = nullptr;
-        m_logpanel->m_logtext->AppendText("Could not create the thread needed to retrieve the images from a NIR or LWIR camera.\n");
+        m_logpanel->m_logtext->AppendText("Could not create the scripter thread.\n");
     }
     else {
         m_logpanel->m_logtext->AppendText("Launching Script file... \n");

@@ -24,6 +24,8 @@ class NIRCameraThread;
 class FusionCameraThread;
 class Scripter;
 
+
+
 class MainWindow: public wxFrame
 {
 public:
@@ -78,23 +80,25 @@ public:
     bool m_isInitialized = false;
     bool m_onlyZoom = false;
     cv::UMat m_ocvmat;
-    // pan tilt
-
-
-private:
+    wxString address = "rtsp://192.168.30.168/main";
+    // pan tilt    
     enum Mode //for the future cameras
     {
         Empty,
-        Image,
-        Video,
-        WebCam,
-        IPCamera,
-        LWIRCamera,
-        NIRCamera,
-        FuseNIRLWIR
+            Image,
+            Video,
+            WebCam,
+            IPCamera,
+            LWIRCamera,
+            NIRCamera,
+            FuseNIRLWIR
     };
 
     Mode                     m_mode{ Empty };
+    Mode                     current_mode{ Empty };
+
+//private:
+
     wxString                 m_sourceName;
     int                      m_currentVideoFrameNumber{ 0 };
 
@@ -123,9 +127,11 @@ private:
 
     void Clear();
 
+
+    
     // If address is empty, the default webcam is used.
     // resolution and useMJPEG are used only for webcam.
-    bool StartIPCameraCapture(const wxString& address,
+    bool StartIPCameraCapture(wxString& address,
         const wxSize& resolution = wxSize(),
         bool useMJPEG = false);
     bool StartIPCameraThread();
