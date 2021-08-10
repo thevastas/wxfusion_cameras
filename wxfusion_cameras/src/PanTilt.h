@@ -42,4 +42,6 @@ public:
 	void Stop();
 	void SetPreset(int pos);
 	void Preset(int pos);
+	//int QueryPan();
+	//int QueryTilt();
 };

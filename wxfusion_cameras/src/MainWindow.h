@@ -82,6 +82,8 @@ public:
     cv::UMat m_ocvmat;
     wxString address = "rtsp://192.168.30.168/main";
     // pan tilt    
+    void OnQueryPan(wxCommandEvent& event);
+    void OnQueryTilt(wxCommandEvent& event);
     enum Mode //for the future cameras
     {
         Empty,

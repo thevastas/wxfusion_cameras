@@ -144,6 +144,8 @@ public:
 	wxButton* m_focusout;
 	wxStaticText* m_textzoom;
 	wxStaticText* m_textfocus;
+	wxSpinCtrl* m_tlspeed;
+	wxStaticText* m_textspeed;
 	void OnStop(wxMouseEvent& event);
 	void OnZoomIn(wxMouseEvent& event);
 	void OnZoomOut(wxMouseEvent& event);

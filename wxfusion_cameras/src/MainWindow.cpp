@@ -423,6 +423,8 @@ public:
     void RFPointerOn();
     void RFPointerOff();
     void RFMeasure();
+    //void QueryPan();
+    //void QueryTilt();
     wxPanel* m_parent;
     MainWindow* myParent;
 };
@@ -438,7 +440,7 @@ void Functions::RFPointerOn()
     
     Rangefinder rangefinder("COM6", 19200);
     rangefinder.PointerOn();
-    myParent->m_logpanel->m_logtext->AppendText("Pointer was turned ON \n");
+    myParent->m_logpanel->m_logtext->AppendText("\nPointer was turned ON \n");
     //m_test = 2;
 }
 
@@ -446,7 +448,7 @@ void Functions::RFPointerOff()
 {
     Rangefinder rangefinder("COM6", 19200);
     rangefinder.PointerOff();
-    myParent->m_logpanel->m_logtext->AppendText("Pointer was turned OFF \n");
+    myParent->m_logpanel->m_logtext->AppendText("\nPointer was turned OFF \n");
     //m_test = 3;
 }
 
@@ -522,7 +524,6 @@ wxThread::ExitCode Scripter::Entry()
                         int i = 0;
                         while (i < loopsize) {
 
-                            //myParent->m_logpanel->m_logtext->AppendText(wxString::Format(wxT("\n Loop %i of %i: "), i+1, cval));
                             str = tfile.GetNextLine();
                             
                             arrstr = wxSplit(str, '=');
@@ -532,7 +533,6 @@ wxThread::ExitCode Scripter::Entry()
                                         myParent->m_logpanel->m_logtext->AppendText("Sleeping for ");
                                         myParent->m_logpanel->m_logtext->AppendText(arrstr[1]);
                                         myParent->m_logpanel->m_logtext->AppendText(" seconds");
-                                        //sfunctions.wait(wxAtoi(arrstr[1]));
                                         wxThread::Sleep(wxAtoi(arrstr[1]) * 1000);
                                     }
                                     else {
@@ -563,16 +563,9 @@ wxThread::ExitCode Scripter::Entry()
                                 else if (arrstr[0].ToStdString() == "rfp") {
                                     if (arrstr[1].ToStdString() == "1") {
                                         fs.RFPointerOn();
-                                        //myParent->m_logpanel->m_logtext->AppendText("\n");
-                                        //myParent->m_logpanel->m_logtext->AppendText("Turning pointer ON");
-                                        //Rangefinder rangefinder("COM6", 19200);
-                                        //rangefinder.PointerOn();
                                     }
                                     else if (arrstr[1].ToStdString() == "0") {
-                                        myParent->m_logpanel->m_logtext->AppendText("\n");
-                                        myParent->m_logpanel->m_logtext->AppendText("Turning pointer OFF");
-                                        Rangefinder rangefinder("COM6", 19200);
-                                        rangefinder.PointerOff();
+                                        fs.RFPointerOff();
                                     }
                                     else {
                                         //invalid variable
@@ -585,11 +578,9 @@ wxThread::ExitCode Scripter::Entry()
                                         myParent->m_logpanel->m_logtext->AppendText("Distance:");
                                         myParent->m_logpanel->m_logtext->AppendText(wxString::Format(wxT(" %f"), rangefinder.Measure()));
                                         myParent->m_logpanel->m_logtext->AppendText(" meters.");
-                                        // TODO
                                         
                                     }
                                     else {
-                                        //myParent->m_videopanel->m_zoomstream->SetValue(true);
                                         //invalid variable
                                     }
                                 }
@@ -728,7 +719,6 @@ MainWindow::MainWindow(wxWindow* parent,
     viewMenu->Append(window::id::NIRPOI, "Enable NIR POI");
     viewMenu->Append(window::id::CROSSHAIR, "Enable crosshair");
 
-
     // OPTIONS MENU
     optionsMenu = new wxMenu();
     menuBar->Append(optionsMenu, _("&Options"));
@@ -775,8 +765,8 @@ MainWindow::MainWindow(wxWindow* parent,
     sizer->Add(m_logpanel, 0, wxEXPAND | wxALL, 5);
 
 
-    SetMinClientSize(FromDIP(wxSize(1000, 700)));
-    SetSize(FromDIP(wxSize(1000, 700)));
+    SetMinClientSize(FromDIP(wxSize(1000, 800)));
+    SetSize(FromDIP(wxSize(1000, 800)));
 
     m_parent->SetSizerAndFit(sizer);
 
@@ -1088,13 +1078,9 @@ void MainWindow::OnLWIRCamera(wxCommandEvent& event)
     strings.push_back("Fusion");
     strings.push_back("Disabled");
     m_videopanel->m_pip->Set(strings);
-    //static wxString address = "rtsp://192.168.30.168/main";
     if (StartLWIRCameraCapture(m_lwirhandle))
     {
-        //m_lwirhandle = lwir.Init();
         m_mode = LWIRCamera;
-        //m_propertiesButton->Enable();
-        //optionsMenu->Enable(window::id::STREAMINFO, 1);
     }
 }
 
@@ -1178,8 +1164,6 @@ void MainWindow::DeleteNIRCameraThread() {
 void MainWindow::OnNIRCameraFrame(wxThreadEvent& evt) {
     NIRCameraThread::CameraFrame* frame = evt.GetPayload<NIRCameraThread::CameraFrame*>();
 
-    // After deleting the camera thread we may still get a stray frame
-    // from yet unprocessed event, just silently drop it.
     if (m_mode != NIRCamera)
     {
         delete frame;
@@ -1252,8 +1236,6 @@ void MainWindow::DeleteFusionCameraThread() {
 void MainWindow::OnFusionCameraFrame(wxThreadEvent& evt) {
     FusionCameraThread::CameraFrame* frame = evt.GetPayload<FusionCameraThread::CameraFrame*>();
 
-    // After deleting the camera thread we may still get a stray frame
-    // from yet unprocessed event, just silently drop it.
     if (m_mode != FuseNIRLWIR)
     {
         delete frame;
@@ -1386,7 +1368,7 @@ void MainWindow::OnOpen(wxCommandEvent& event)
     }
     else {
         m_logpanel->m_logtext->AppendText("Launching Script file... \n");
-
+        InitializeCameras(event);
     }
 }
 

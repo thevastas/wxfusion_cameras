@@ -128,3 +128,28 @@ void PanTilt::Preset(int pos) {
 	asio::write(PanTilt::serial, asio::buffer(input));
 	return;
 }
+
+//int PanTilt::QueryPan() {
+//	unsigned char data[10];
+//	unsigned char input[7]{ 0xFF,0x01, 0x00, 0x53, 0x00, 0x00, 0x01 };
+//	//input[5] = pos;
+//	input[6] = Checksum(input);
+//	asio::write(PanTilt::serial, asio::buffer(input));
+//	size_t nread = asio::read(PanTilt::serial, asio::buffer(&data, 10));
+//	int a = data[5];
+//	int b = data[6];
+//	return 0;
+//}
+//
+//
+//int PanTilt::QueryTilt() {
+//	unsigned char data[10];
+//	unsigned char input[7]{ 0xFF,0x01, 0x00, 0x55, 0x00, 0x00, 0x01 };
+//	//input[5] = pos;
+//	input[6] = Checksum(input);
+//	asio::write(PanTilt::serial, asio::buffer(input));
+//	size_t nread = asio::read(PanTilt::serial, asio::buffer(&data, 10));
+//	int a = data[5];
+//	int b = data[6];
+//	return 0;
+//}

@@ -41,4 +41,5 @@ public:
     void FocusIn(int speed);
     void FocusOut(int speed);
     void Stop();
+    unsigned char speedarr[5] = {0x0, 0x20, 0x10, 0x8, 0x4};
 };

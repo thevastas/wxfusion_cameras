@@ -21,6 +21,8 @@ namespace window
 		OPENFILE = 134,
 		CONNSETTINGS = 140,
 		STREAMINFO = 141,
+		QUERYPAN = 150,
+		QUERYTILT = 151,
 		BZOOMIN = 1001,
 		BZOOMOUT = 1002,
 		BUP = 1003,
@@ -55,6 +57,7 @@ namespace window
 		BTZOOMOUT = 1032,
 		BTFOCUSIN = 1033,
 		BTFOCUSOUT = 1034,
+		BTLSPEED = 1035,
 		LOGTEXT = 1100
 	};
 }

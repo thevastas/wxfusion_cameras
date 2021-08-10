@@ -455,6 +455,14 @@ ThermalLensPanel::ThermalLensPanel(wxPanel* parent) : wxPanel(parent, -1, wxDefa
     m_focusout->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(ThermalLensPanel::OnFocusOut), NULL, this);
     m_focusout->Connect(wxEVT_LEFT_UP, wxMouseEventHandler(ThermalLensPanel::OnStop), NULL, this);
 
+    m_textspeed = new wxStaticText(this, -1, wxT("Speed"), wxPoint(150 + 20, ptzbuttonoriginy + ptzbuttonspacing));
+    m_textspeed->SetForegroundColour(wxColor(214, 214, 214));
+
+
+    m_tlspeed = new wxSpinCtrl(this, window::id::BTLSPEED,
+        wxT("3"), wxPoint(230, ptzbuttonoriginy), wxSize(ptzbuttonsize + 20, ptzbuttonsize), wxSP_ARROW_KEYS, 1, 5, 1);
+    m_tlspeed->SetBackgroundColour(wxColor(214, 214, 214));
+
 }
 
 void ThermalLensPanel::OnStop(wxMouseEvent& event)
@@ -467,7 +475,7 @@ void ThermalLensPanel::OnStop(wxMouseEvent& event)
 void ThermalLensPanel::OnZoomIn(wxMouseEvent& event)
 {
     ThermalZoom pt(m_parent, "COM4", 2400);
-    pt.ZoomIn(5);
+    pt.ZoomIn(m_tlspeed->GetValue());
     //Close();
     event.Skip();
 }
@@ -475,20 +483,20 @@ void ThermalLensPanel::OnZoomIn(wxMouseEvent& event)
 void ThermalLensPanel::OnZoomOut(wxMouseEvent& event)
 {
     ThermalZoom pt(m_parent, "COM4", 2400);
-    pt.ZoomOut(5);
+    pt.ZoomOut(m_tlspeed->GetValue());
     event.Skip();
 }
 
 void ThermalLensPanel::OnFocusIn(wxMouseEvent& event)
 {
     ThermalZoom pt(m_parent, "COM4", 2400);
-    pt.FocusIn(5);
+    pt.FocusIn(m_tlspeed->GetValue());
     event.Skip();
 }
 
 void ThermalLensPanel::OnFocusOut(wxMouseEvent& event)
 {
     ThermalZoom pt(m_parent, "COM4", 2400);
-    pt.FocusOut(5);
+    pt.FocusOut(m_tlspeed->GetValue());
     event.Skip();
 }
