@@ -124,6 +124,8 @@ public:
     wxSlider* m_videoSlider;
     wxButton* m_propertiesButton;
 
+    bool m_crosshair = false;
+
     static wxBitmap ConvertMatToBitmap(const cv::UMat matBitmap, long& timeConvert);
     //cv::Mat m_ocvbitmap;
 
