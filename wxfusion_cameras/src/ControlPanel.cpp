@@ -395,7 +395,7 @@ FusionRatioPanel::FusionRatioPanel(wxPanel* parent)
     m_textratio = new wxStaticText(this, -1, wxT("Fusion ratio:"), wxPoint(10,10));
     m_textratio->SetForegroundColour(wxColor(214, 214, 214));
 
-    m_fusionslider = new wxSlider(this, window::id::BFUSIONRATIO, 50, 0, 100,
+    m_fusionslider = new wxSlider(this, window::id::BFUSIONRATIO, 100, 0, 200,
         wxPoint(10, 30), wxSize(280, -1));
     //m_fusionslider->Disable();
 

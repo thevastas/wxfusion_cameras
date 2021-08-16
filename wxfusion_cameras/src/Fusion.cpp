@@ -85,8 +85,19 @@ cv::UMat Fusion::fuse_offset(cv::UMat nir_img, cv::UMat lwir_img, int weight) {
     //cv::cvtColor(lwir_img, lwir_img, cv::COLOR_BGR2GRAY);
     //warning
     m_palette = true;
-    double weight_nir = weight / 100.0;
-    double weight_lwir = (100 - weight) / 100.0;
+
+    double weight_nir; 
+    double weight_lwir;
+
+    if (weight <= 100) {
+        weight_nir = weight / 100.0;
+        weight_lwir = 1.0;
+    }
+    else {
+        weight_nir = 1.0;
+        weight_lwir = (200 - (double)weight ) / 100.0;
+    }
+
     if (m_palette) {
 
         const cv::UMat zero_img = cv::UMat::zeros(m_nir_poi.rows, m_nir_poi.cols, CV_8UC1);
