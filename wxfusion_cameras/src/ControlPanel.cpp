@@ -397,7 +397,7 @@ FusionRatioPanel::FusionRatioPanel(wxPanel* parent)
 
     m_fusionslider = new wxSlider(this, window::id::BFUSIONRATIO, 50, 0, 100,
         wxPoint(10, 30), wxSize(280, -1));
-    m_fusionslider->Disable();
+    //m_fusionslider->Disable();
 
 }
 

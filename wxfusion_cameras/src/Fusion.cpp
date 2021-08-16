@@ -72,7 +72,7 @@ void Fusion::init(cv::UMat nir_img, cv::UMat lwir_img, int offsetx, int offsety,
     //return fused_img;
 
 }
-cv::UMat Fusion::fuse_offset(cv::UMat nir_img, cv::UMat lwir_img) {
+cv::UMat Fusion::fuse_offset(cv::UMat nir_img, cv::UMat lwir_img, int weight) {
     m_nir_roi = nir_img(cv::Rect(m_nirx1, m_niry1, m_fused_columns, m_fused_rows));
     m_lwir_roi = lwir_img(cv::Rect(m_lwirx1, m_lwiry1, m_fused_columns, m_fused_rows));
 
@@ -85,17 +85,20 @@ cv::UMat Fusion::fuse_offset(cv::UMat nir_img, cv::UMat lwir_img) {
     //cv::cvtColor(lwir_img, lwir_img, cv::COLOR_BGR2GRAY);
     //warning
     m_palette = true;
-
+    double weight_nir = weight / 100.0;
+    double weight_lwir = (100 - weight) / 100.0;
     if (m_palette) {
 
         const cv::UMat zero_img = cv::UMat::zeros(m_nir_poi.rows, m_nir_poi.cols, CV_8UC1);
         std::vector<cv::UMat> images(3);
-
+        
         images.at(0) = zero_img;
-        images.at(1) = m_nir_poi;
+        cv::multiply(m_nir_poi, weight_nir, scaled_nir, 1);
+        images.at(1) = scaled_nir;
         //images.at(1) = nir_img;
        //images.at(1) = zero_img;
-        images.at(2) = m_lwir_poi;
+        cv::multiply(m_lwir_poi, weight_lwir, scaled_lwir, 1);
+        images.at(2) = scaled_lwir;
         //images.at(2) = lwir_img;
         cv::merge(images, m_fused_img);
         m_fused_img.convertTo(m_fused_img, CV_8UC3);

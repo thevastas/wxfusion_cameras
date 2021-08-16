@@ -29,7 +29,8 @@ public:
 	double m_ratio;
 	bool m_palette;
 	cv::UMat m_fused_img;
-	cv::UMat fuse_offset(cv::UMat nir_img, cv::UMat lwir_img);
+	cv::UMat scaled_nir, scaled_lwir;
+	cv::UMat fuse_offset(cv::UMat nir_img, cv::UMat lwir_img, int weight);
 	void init(cv::UMat nir_img, cv::UMat lwir_img, int offsetx, int offsety, double ratio, bool palette);
 };
 

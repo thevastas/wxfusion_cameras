@@ -1251,7 +1251,7 @@ void MainWindow::OnFusionCameraFrame(wxThreadEvent& evt) {
 
     long     timeConvert = 0;
 
-    fusion.m_fused_img = fusion.fuse_offset(frame->matNirBitmap, frame->matLwirBitmap);
+    fusion.m_fused_img = fusion.fuse_offset(frame->matNirBitmap, frame->matLwirBitmap, m_fusionratiopanel->m_fusionslider->GetValue());
     if (m_crosshair) cv::drawMarker(fusion.m_fused_img, cv::Point(320, 240), cv::Scalar(0, 0, 255), cv::MARKER_CROSS, 50, 1); //TODO fix center
     wxBitmap bitmap = ConvertMatToBitmap(fusion.m_fused_img, timeConvert);
     //wxBitmap bitmap = ConvertMatToBitmap(frame->matLwirBitmap, timeConvert);
