@@ -89,14 +89,17 @@ cv::UMat ThermalCam::GetFrame(HANDLE handle) {
 	
 	if (!srcuImage.empty()){
 		cv::cvtColor(srcuImage, uimage, cv::COLOR_GRAY2BGR);
+		//cv::convertScaleAbs(uimage, uimage2, 1.0 / 256);
 		cv::convertScaleAbs(uimage, uimage2, 1.0 / 256);
-		uimage2.convertTo(uimage3, CV_8UC3);
-		//cv::resize(uimage3, resizedImage, cv::Size(1296, 972));
+		cv::resize(uimage2, uimage3, cv::Size(1296, 972));
+		uimage3.convertTo(uimage4, CV_8UC3);
+		
 	}
 
 	//Sleep(30);
 	//return outImage;
-	return uimage3;
+	//return resizedImage;
+	return uimage4;
 
 }
 

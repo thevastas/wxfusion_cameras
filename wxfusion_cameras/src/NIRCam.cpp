@@ -1609,13 +1609,15 @@ cv::UMat NIRCam::GetFrame(bool automaticmode, std::shared_ptr<peak::core::DataSt
     std::memcpy(cvImage.data, image.Data(), static_cast<size_t>(sizeBuffer));
     m_dataStream->QueueBuffer(buffer);
     cvImage.copyTo(uimage);
-    uimage.convertTo(uimage2, CV_8UC3);
-    //cv::resize(uimage2, uimage3, cv::Size(1296, 972));
+    cv::flip(uimage, uimage2, 1);
+    cv::resize(uimage2, uimage3, cv::Size(1296, 972));
+    uimage3.convertTo(uimage4, CV_8UC3);
+    
         //cv::resize(uimage, uimage2, cv::Size(1296, 972), cv::INTER_CUBIC);
         //cv::cvtColor(uimage2, uimage3, cv::COLOR_GRAY2BGR);
         //cv::rotate(uimage3, uimage4, 1);
-        //cv::flip(uimage3, uimage4, 0);
-    return uimage2;
+        
+    return uimage4;
    // uimage.copyTo(outImage);
     //return outImage;
 }

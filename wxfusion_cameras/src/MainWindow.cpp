@@ -349,8 +349,9 @@ protected:
 
 FusionCameraThread::FusionCameraThread(wxEvtHandler* eventSink, std::shared_ptr<peak::core::DataStream> dataStream, HANDLE handle)
     : wxThread(wxTHREAD_JOINABLE),
-    m_eventSink(eventSink), m_dataStream(dataStream)
+    m_eventSink(eventSink), m_dataStream(dataStream), m_lwircamera(handle)
 {
+    wxASSERT(m_eventSink);
 }
 
 wxThread::ExitCode FusionCameraThread::Entry()
@@ -370,7 +371,7 @@ wxThread::ExitCode FusionCameraThread::Entry()
 
             frame->timeGet = stopWatch.Time(); //measure retrieval time
 
-            if (!frame->matNirBitmap.empty() || !frame->matLwirBitmap.empty()) //if successful, set payload
+            if (!frame->matNirBitmap.empty() && !frame->matLwirBitmap.empty()) //if successful, set payload
             {
                 wxThreadEvent* evt = new wxThreadEvent(wxEVT_FUSIONCAMERA_FRAME);
 
@@ -921,7 +922,7 @@ void MainWindow::InitializeCameras(wxCommandEvent& event)
         }
 
         lwir.Setup(m_lwirhandle);
-        //fusion.init(nir.GetFrame(true, m_dataStream), lwir.GetFrame(m_lwirhandle), 0, 0, 0.5, true);
+        fusion.init(nir.GetFrame(true, m_dataStream), lwir.GetFrame(m_lwirhandle), 0, 0, 0.5, true);
         m_logpanel->m_logtext->AppendText("Cameras initialized\n");
         m_isInitialized = true;
 
@@ -1253,6 +1254,7 @@ void MainWindow::OnFusionCameraFrame(wxThreadEvent& evt) {
     fusion.m_fused_img = fusion.fuse_offset(frame->matNirBitmap, frame->matLwirBitmap);
     if (m_crosshair) cv::drawMarker(fusion.m_fused_img, cv::Point(320, 240), cv::Scalar(0, 0, 255), cv::MARKER_CROSS, 50, 1); //TODO fix center
     wxBitmap bitmap = ConvertMatToBitmap(fusion.m_fused_img, timeConvert);
+    //wxBitmap bitmap = ConvertMatToBitmap(frame->matLwirBitmap, timeConvert);
 
     if (bitmap.IsOk())
         m_bitmapPanel->SetBitmap(bitmap, frame->timeGet, timeConvert);
