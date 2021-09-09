@@ -69,7 +69,6 @@ void Fusion::init(cv::UMat nir_img, cv::UMat lwir_img, int offsetx, int offsety,
 
     
     return;
-    //return fused_img;
 
 }
 cv::UMat Fusion::fuse_offset(cv::UMat nir_img, cv::UMat lwir_img, int weight) {
@@ -81,9 +80,6 @@ cv::UMat Fusion::fuse_offset(cv::UMat nir_img, cv::UMat lwir_img, int weight) {
 
     cv::cvtColor(m_nir_poi, m_nir_poi, cv::COLOR_BGR2GRAY);
     cv::cvtColor(m_lwir_poi, m_lwir_poi, cv::COLOR_BGR2GRAY);
-    //cv::cvtColor(nir_img, nir_img, cv::COLOR_BGR2GRAY);
-    //cv::cvtColor(lwir_img, lwir_img, cv::COLOR_BGR2GRAY);
-    //warning
     m_palette = true;
 
     double weight_nir; 
@@ -106,11 +102,8 @@ cv::UMat Fusion::fuse_offset(cv::UMat nir_img, cv::UMat lwir_img, int weight) {
         images.at(0) = zero_img;
         cv::multiply(m_nir_poi, weight_nir, scaled_nir, 1);
         images.at(1) = scaled_nir;
-        //images.at(1) = nir_img;
-       //images.at(1) = zero_img;
         cv::multiply(m_lwir_poi, weight_lwir, scaled_lwir, 1);
         images.at(2) = scaled_lwir;
-        //images.at(2) = lwir_img;
         cv::merge(images, m_fused_img);
         m_fused_img.convertTo(m_fused_img, CV_8UC3);
         //applyColorMap(lwir_poi, lwir_poi, cv::COLORMAP_HOT);
@@ -119,11 +112,8 @@ cv::UMat Fusion::fuse_offset(cv::UMat nir_img, cv::UMat lwir_img, int weight) {
     }
     else {
         m_fused_img = lwir_img.clone();
-        //m_nir_poi = m_nir_poi * m_ratio;
-        //m_lwir_poi = m_lwir_poi * (1 - m_ratio);
-        //m_fused_img = m_nir_poi + m_lwir_poi;
+
     }
-    //return;
     return m_fused_img;
 }
 

@@ -8,7 +8,7 @@ void ThermalZoom::Close() {
 
 void ThermalZoom::ZoomIn(int speed) {
 	speed = 4; // TODO speed fix on arduino
-	unsigned char input[1]{ 0x80 };
+	unsigned char input[1]{ 0xC0 };
 	input[0] = input[0] + speedarr[speed];
 	asio::write(ThermalZoom::serial, asio::buffer(input));
 
@@ -16,7 +16,8 @@ void ThermalZoom::ZoomIn(int speed) {
 }
 void ThermalZoom::ZoomOut(int speed) {
 	speed = 4; // TODO speed fix on arduino
-	unsigned char input[1]{ 0xC0 };
+	unsigned char input[1]{ 0x80 };
+	
 	input[0] = input[0] + speedarr[speed];
 	//input[5] = m_speed[speed];
 	asio::write(ThermalZoom::serial, asio::buffer(input));

@@ -440,10 +440,10 @@ ThermalLensPanel::ThermalLensPanel(wxPanel* parent) : wxPanel(parent, -1, wxDefa
     m_focusin->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(ThermalLensPanel::OnFocusIn), NULL, this);
     m_focusin->Connect(wxEVT_LEFT_UP, wxMouseEventHandler(ThermalLensPanel::OnStop), NULL, this);
 
-    m_textzoom = new wxStaticText(this, -1, wxT("LWIR Zoom"), wxPoint(50, ptzbuttonoriginy + 6));
+    m_textzoom = new wxStaticText(this, -1, wxT("LWIR Zoom"), wxPoint(50, ptzbuttonoriginy + ptzbuttonsize + ptzbuttonspacing + 6));
     m_textzoom->SetForegroundColour(wxColor(214, 214, 214));
-
-    m_textfocus = new wxStaticText(this, -1, wxT("LWIR Focus"), wxPoint(50, ptzbuttonoriginy + ptzbuttonsize + ptzbuttonspacing + 6));
+    
+    m_textfocus = new wxStaticText(this, -1, wxT("LWIR Focus"), wxPoint(50, ptzbuttonoriginy + 6));
     m_textfocus->SetForegroundColour(wxColor(214, 214, 214));
 
     m_zoomout = new wxButton(this, window::id::BZOOMOUT, wxT("-"), wxPoint(ptzbuttonoriginx, ptzbuttonoriginy), wxSize(ptzbuttonsize, ptzbuttonsize));

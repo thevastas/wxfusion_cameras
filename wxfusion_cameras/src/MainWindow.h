@@ -6,6 +6,11 @@
 #include "ThermalCam.h"
 #include "NIRCam.h"
 #include "Fusion.h"
+
+#include <wx/stdpaths.h>
+#include <wx/config.h>
+#include <wx/confbase.h>
+#include <wx/fileconf.h>
 //#include "bmpfromocvpanel.h"
 //#include "View.h"
 
@@ -124,6 +129,13 @@ public:
     wxSlider* m_videoSlider;
     wxButton* m_propertiesButton;
 
+
+    wxString m_rfport = "COM6";
+    wxString m_thermalzoomport = "COM4";
+    wxString m_pantiltport = "COM5";
+    int m_fusionoffsetx = 0;
+    int m_fusionoffsety = 0;
+
     bool m_crosshair = false;
 
     static wxBitmap ConvertMatToBitmap(const cv::UMat matBitmap, long& timeConvert);
@@ -131,7 +143,10 @@ public:
 
     void Clear();
 
+    //wxFileConfig* ConfigINI = new wxFileConfig(wxEmptyString, wxEmptyString, wxEmptyString, "C:/Users/PANTILT/source/repos/wxfusion_cameras/settings.ini");
+        wxFileConfig* ConfigINI = new wxFileConfig(wxEmptyString, wxEmptyString, wxEmptyString, wxGetCwd() + "\\settings.ini");
 
+    wxString group;
     
     // If address is empty, the default webcam is used.
     // resolution and useMJPEG are used only for webcam.
@@ -168,7 +183,8 @@ public:
     void OnCameraEmpty(wxThreadEvent&);
     void OnCameraException(wxThreadEvent& evt);
 
-    
+    void ReadSettings(wxCommandEvent& event);
+    void SaveSettings(wxCommandEvent& event);
 
     wxDECLARE_EVENT_TABLE();
 };

@@ -35,6 +35,8 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     EVT_MENU(window::id::STREAMINFO, MainWindow::OnStreamInfo)
     EVT_MENU(window::id::CROSSHAIR, MainWindow::OnCrosshair)
     EVT_MENU(window::id::DCCAMERAS, MainWindow::OnDCCameras)
+    EVT_MENU(window::id::READSETTINGS, MainWindow::ReadSettings)
+    EVT_MENU(window::id::SAVESETTINGS, MainWindow::SaveSettings)
     EVT_MENU(wxID_OPEN, MainWindow::OnOpen)
     EVT_BUTTON(window::id::BMEASUREDISTANCE, MainWindow::OnRFMeasure)
     EVT_RADIOBUTTON(window::id::BZOOMSTREAM, MainWindow::OnIPCamera)
@@ -424,8 +426,6 @@ public:
     void RFPointerOn();
     void RFPointerOff();
     void RFMeasure();
-    //void QueryPan();
-    //void QueryTilt();
     wxPanel* m_parent;
     MainWindow* myParent;
 };
@@ -442,7 +442,6 @@ void Functions::RFPointerOn()
     Rangefinder rangefinder("COM6", 19200);
     rangefinder.PointerOn();
     myParent->m_logpanel->m_logtext->AppendText("\nPointer was turned ON \n");
-    //m_test = 2;
 }
 
 void Functions::RFPointerOff()
@@ -450,7 +449,6 @@ void Functions::RFPointerOff()
     Rangefinder rangefinder("COM6", 19200);
     rangefinder.PointerOff();
     myParent->m_logpanel->m_logtext->AppendText("\nPointer was turned OFF \n");
-    //m_test = 3;
 }
 
 void Functions::RFMeasure()
@@ -509,7 +507,6 @@ wxThread::ExitCode Scripter::Entry()
 
         for (str = tfile.GetFirstLine(); !tfile.Eof(); str = tfile.GetNextLine())
         {
-            //str = tfile.GetNextLine();
             arrstr=wxSplit(str, '=');
             int cval = wxAtoi(arrstr[1]);
             if (!arrstr.IsEmpty()) {
@@ -667,6 +664,10 @@ MainWindow::MainWindow(wxWindow* parent,
     wxFrame(parent, id, title, pos, size, style, name)
 {
 
+
+
+
+
     //cv::setBreakOnError(true);
     //warning
     Fusion fusiont;
@@ -719,12 +720,16 @@ MainWindow::MainWindow(wxWindow* parent,
     viewMenu->Append(window::id::THERMALPOI,"Thermal POI");
     viewMenu->Append(window::id::NIRPOI, "NIR POI");
     viewMenu->Append(window::id::CROSSHAIR, "Crosshair");
+    viewMenu->Append(window::id::STREAMINFO, "Stream information");
+    //viewMenu->Append(window::id::STREAMINFO, "Stream information");
 
     // OPTIONS MENU
     optionsMenu = new wxMenu();
     menuBar->Append(optionsMenu, _("&Options"));
-    optionsMenu->Append(window::id::CONNSETTINGS, "Connection settings");
-    optionsMenu->Append(window::id::STREAMINFO, "Stream information");
+    optionsMenu->Append(window::id::READSETTINGS, "Read settings");
+    optionsMenu->Append(window::id::SAVESETTINGS, "Save settings");
+    //optionsMenu->Append(window::id::CONNSETTINGS, "Connection settings");
+    
         
     SetMenuBar(menuBar);
 
@@ -774,10 +779,6 @@ MainWindow::MainWindow(wxWindow* parent,
 
 
 
-
-
-
-
     Clear();
     Bind(wxEVT_CAMERACHANGED_IP, &MainWindow::OnIPCamera, this);
     Bind(wxEVT_CAMERACHANGED_LWIR, &MainWindow::OnLWIRCamera, this);
@@ -802,6 +803,9 @@ MainWindow::MainWindow(wxWindow* parent,
 MainWindow::~MainWindow()
 {
     DeleteIPCameraThread();
+    DeleteNIRCameraThread();
+    DeleteLWIRCameraThread();
+    DeleteFusionCameraThread();
 }
 
 
@@ -898,20 +902,23 @@ void MainWindow::Clear()
 
     m_bitmapPanel->SetBitmap(wxBitmap(), 0, 0);
 
-    optionsMenu->Enable(window::id::STREAMINFO,0);
+    viewMenu->Enable(window::id::STREAMINFO,0);
     //m_propertiesButton->Disable();
 
 }
 
 void MainWindow::InitializeCameras(wxCommandEvent& event)
 {
-    DeleteIPCameraThread();
-    DeleteNIRCameraThread();
-    DeleteLWIRCameraThread();
-    DeleteFusionCameraThread();
+
 
 
     if (!m_isInitialized) {
+        DeleteIPCameraThread();
+        DeleteNIRCameraThread();
+        DeleteLWIRCameraThread();
+        DeleteFusionCameraThread();
+
+
         cameraMenu->Enable(window::id::CAMERAINIT, 0);
         m_logpanel->m_logtext->AppendText("Initializing cameras...\n");
         m_dataStream = nir.OpenDevice();
@@ -922,7 +929,7 @@ void MainWindow::InitializeCameras(wxCommandEvent& event)
         }
 
         lwir.Setup(m_lwirhandle);
-        fusion.init(nir.GetFrame(true, m_dataStream), lwir.GetFrame(m_lwirhandle), 0, 0, 0.5, true);
+        fusion.init(nir.GetFrame(true, m_dataStream), lwir.GetFrame(m_lwirhandle), m_fusionoffsetx, m_fusionoffsetx, 0.5, true);
         m_logpanel->m_logtext->AppendText("Cameras initialized\n");
         m_isInitialized = true;
 
@@ -998,6 +1005,7 @@ void MainWindow::OnIPCamera(wxCommandEvent& event)
         optionsMenu->Enable(window::id::STREAMINFO, 1);
     }
     else Clear();
+    Refresh();
 }
 void MainWindow::OnCameraFrame(wxThreadEvent& evt)
 {
@@ -1087,6 +1095,7 @@ void MainWindow::OnLWIRCamera(wxCommandEvent& event)
     {
         m_mode = LWIRCamera;
     }
+    Refresh();
 }
 
 
@@ -1131,6 +1140,7 @@ void MainWindow::OnNIRCamera(wxCommandEvent& event) {
     {
         m_mode = NIRCamera;
     }
+    Refresh();
 }
 bool MainWindow::StartNIRCameraCapture() {
     Clear();
@@ -1148,7 +1158,14 @@ bool MainWindow::StartNIRCameraThread() {
     DeleteNIRCameraThread();
     DeleteLWIRCameraThread();
     DeleteFusionCameraThread();
+    
+    //if (m_nircameraThread->IsAlive()) DeleteNIRCameraThread();
+    //if (m_cameraThread->IsAlive()) DeleteIPCameraThread();
+    //if (m_lwircameraThread->IsAlive()) DeleteLWIRCameraThread();
+    //if (m_fusioncameraThread->IsAlive()) DeleteFusionCameraThread();
+
     m_nircameraThread = new NIRCameraThread(this, m_dataStream);
+
     if (m_nircameraThread->Run() != wxTHREAD_NO_ERROR)
     {
         delete m_nircameraThread;
@@ -1177,7 +1194,7 @@ void MainWindow::OnNIRCameraFrame(wxThreadEvent& evt) {
     }
 
     long     timeConvert = 0;
-    if (m_crosshair) cv::drawMarker(frame->matBitmap, cv::Point(612, 512), cv::Scalar(0, 0, 255), cv::MARKER_CROSS, 50, 1); //TODO fix center
+    if (m_crosshair) cv::drawMarker(frame->matBitmap, cv::Point(612, 512), cv::Scalar(0, 0, 255), cv::MARKER_CROSS, 50, 1);
     wxBitmap bitmap = ConvertMatToBitmap(frame->matBitmap, timeConvert);
 
     if (bitmap.IsOk())
@@ -1203,6 +1220,7 @@ void MainWindow::OnFusionCamera(wxCommandEvent& event) {
     {
         m_mode = FuseNIRLWIR;
     }
+    Refresh();
 }
 bool MainWindow::StartFusionCameraCapture() {
     Clear();
@@ -1252,9 +1270,8 @@ void MainWindow::OnFusionCameraFrame(wxThreadEvent& evt) {
     long     timeConvert = 0;
 
     fusion.m_fused_img = fusion.fuse_offset(frame->matNirBitmap, frame->matLwirBitmap, m_fusionratiopanel->m_fusionslider->GetValue());
-    if (m_crosshair) cv::drawMarker(fusion.m_fused_img, cv::Point(612, 512), cv::Scalar(0, 0, 255), cv::MARKER_CROSS, 50, 1); //TODO fix center
+    if (m_crosshair) cv::drawMarker(fusion.m_fused_img, cv::Point(612, 512), cv::Scalar(255, 255, 0), cv::MARKER_CROSS, 50, 1);
     wxBitmap bitmap = ConvertMatToBitmap(fusion.m_fused_img, timeConvert);
-    //wxBitmap bitmap = ConvertMatToBitmap(frame->matLwirBitmap, timeConvert);
 
     if (bitmap.IsOk())
         m_bitmapPanel->SetBitmap(bitmap, frame->timeGet, timeConvert);
@@ -1380,6 +1397,82 @@ void MainWindow::OnOpen(wxCommandEvent& event)
     }
 }
 
+void MainWindow::ReadSettings(wxCommandEvent& event)
+{
+
+    long group_index;
+
+    ConfigINI->SetPath("/");
+    bool has_group = ConfigINI->GetFirstGroup(group, group_index);
+    m_logpanel->m_logtext->AppendText("Read from settings file: ");
+    m_logpanel->m_logtext->AppendText(wxGetCwd() + "\\settings.ini"+"\n");
+    
+    while (has_group) {
+        ConfigINI->SetPath(group);
+
+        wxString entry;
+        long entry_index;
+
+        bool has_entry = ConfigINI->GetFirstEntry(entry, entry_index);
+        while (has_entry) {
+            wxString value = ConfigINI->Read(entry, "");
+            //wxMessageOutputDebug d;
+           
+            //m_logpanel->m_logtext->AppendText(wxString::Format("[%s] %s = %s", group, entry, value));
+            //m_logpanel->m_logtext->AppendText("\n");
+            if (entry == "rfport") {
+                m_rfport = value;
+                m_logpanel->m_logtext->AppendText("Rangefinder port set to: "+value+"\n");
+            }
+            if (entry == "thermalzoomport") {
+                m_thermalzoomport = value;
+                m_logpanel->m_logtext->AppendText("Thermal Zoom port set to: " + value + "\n");
+            }
+            if (entry == "pantiltport") {
+                m_pantiltport = value;
+                m_logpanel->m_logtext->AppendText("Pan Tilt port set to: " + value + "\n");
+            }
+            if (entry == "fusionoffsetx") {
+                m_fusionoffsetx = wxAtoi(value);
+                m_logpanel->m_logtext->AppendText("Fusion offset X set to: " + value + "\n");
+            }
+            if (entry == "fusionoffsety") {
+                m_fusionoffsety = wxAtoi(value);
+                m_logpanel->m_logtext->AppendText("Fusion offset Y set to: " + value + "\n");
+            }
+            //d.Printf("[%s] %s = %s", group, entry, value);
+
+            has_entry = ConfigINI->GetNextEntry(entry, entry_index);
+        }
+
+        ConfigINI->SetPath("/");
+        has_group = ConfigINI->GetNextGroup(group, group_index);
+    }
+
+
+
+
+
+    //For set path folder of exe and work portable program
+    //wxFileName f(wxStandardPaths::Get().GetExecutablePath());
+    //wxString appPath(f.GetPath() + _T("\\settings.ini"));
+    //ConfigINI->SetPath("/");
+    //ConfigINI->SetPath("/connection");
+    //wxString rfport = ConfigINI->Read("rfport", "ccc");
+    //m_logpanel->m_logtext->AppendText("Read from settings file: ");
+    //m_logpanel->m_logtext->AppendText(rfport);
+    //m_logpanel->m_logtext->AppendText("\n");
+    //txtPath->SetValue(ConfigINI->Read("Folder", "C:/"));
+
+    //ConfigINI->SetPath("/cameras");
+    //CheckBoxGameFire->SetValue(ConfigINI->Read("GameFire", true));
+    //CheckBoxNoInet->SetValue(ConfigINI->Read("NoInternet", true));
+}
+
+void MainWindow::SaveSettings(wxCommandEvent& event)
+{
+
+}
 
 void MainWindow::OnKeyDown(wxKeyEvent& event) // TODO neveikia
 {

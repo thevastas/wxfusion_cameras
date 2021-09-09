@@ -1612,14 +1612,8 @@ cv::UMat NIRCam::GetFrame(bool automaticmode, std::shared_ptr<peak::core::DataSt
     cv::flip(uimage, uimage2, 1);
     cv::resize(uimage2, uimage3, cv::Size(1296, 972));
     uimage3.convertTo(uimage4, CV_8UC3);
-    
-        //cv::resize(uimage, uimage2, cv::Size(1296, 972), cv::INTER_CUBIC);
-        //cv::cvtColor(uimage2, uimage3, cv::COLOR_GRAY2BGR);
-        //cv::rotate(uimage3, uimage4, 1);
         
     return uimage4;
-   // uimage.copyTo(outImage);
-    //return outImage;
 }
 
 void NIRCam::CloseDevice()

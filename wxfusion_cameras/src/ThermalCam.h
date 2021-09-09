@@ -30,8 +30,8 @@ public:
 	cv::UMat uimage;
 	cv::UMat uimage2;
 	cv::UMat uimage3;
-	cv::UMat uimage4;// = cv::UMat(480, 640, CV_16U);
+	cv::UMat uimage4;
 	cv::UMat outImage = cv::UMat::zeros(480, 640, CV_8UC3);
-	cv::UMat resizedImage = cv::UMat::zeros(1296, 972, CV_8UC3);// = cv::Mat::zeros(972, 1296, CV_8UC3);
+	cv::UMat resizedImage = cv::UMat::zeros(1296, 972, CV_8UC3);
 };
 
