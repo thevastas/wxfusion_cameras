@@ -1002,7 +1002,7 @@ void MainWindow::OnIPCamera(wxCommandEvent& event)
     {
         m_mode = IPCamera;
         m_sourceName = address;
-        optionsMenu->Enable(window::id::STREAMINFO, 1);
+        viewMenu->Enable(window::id::STREAMINFO, 1);
     }
     else Clear();
     Refresh();
