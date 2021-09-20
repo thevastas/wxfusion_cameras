@@ -32,6 +32,7 @@
     <ClInclude Include="src\MainWindow.h" />
     <ClInclude Include="src\id.h" />
     <ClInclude Include="src\ThermalCam.h" />
+    <ClInclude Include="src\ThermalCam384.h" />
     <ClInclude Include="src\ThermalZoom.h" />
     <ClInclude Include="ThermalZoom.h" />
   </ItemGroup>
@@ -47,6 +48,7 @@
     <ClCompile Include="src\App.cpp" />
     <ClCompile Include="src\MainWindow.cpp" />
     <ClCompile Include="src\ThermalCam.cpp" />
+    <ClCompile Include="src\ThermalCam384.cpp" />
     <ClCompile Include="src\ThermalZoom.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -156,7 +158,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(PEAKDIR)\api\lib\x86_64;$(PEAKDIR)\ipl\lib\x86_64;$(SolutionDir)lib\;$(OPENCV)\x64\vc15\lib;$(WXWIN)\lib\vc_x64_lib;$(BOOSTDIR)\libs;$(BOOSTDIR)\stage\lib;$(BOOSTDIR)\lib64-msvc-14.2;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ids_peak.lib;ids_peak_ipl.lib;opencv_world450d.lib;wxmsw31ud_core.lib;wxbase31ud.lib;wxtiffd.lib;wxjpegd.lib;wxpngd.lib;wxzlibd.lib;wxregexud.lib;wxexpatd.lib;kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;shlwapi.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;version.lib;wininet.lib;DALProxy640USB_x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ids_peak.lib;ids_peak_ipl.lib;opencv_world450d.lib;wxmsw31ud_core.lib;wxbase31ud.lib;wxtiffd.lib;wxjpegd.lib;wxpngd.lib;wxzlibd.lib;wxregexud.lib;wxexpatd.lib;kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;shlwapi.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;version.lib;wininet.lib;DALProxy640USB_x64.lib;DALProxy384LUSB_x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>XCOPY "$(SolutionDir)"\lib\*.DLL "$(TargetDir)" /D /K /Y</Command>

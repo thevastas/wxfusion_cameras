@@ -60,6 +60,9 @@
     <ClInclude Include="src\ThermalZoom.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\ThermalCam384.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\App.cpp">
@@ -96,6 +99,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\ThermalCam.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThermalCam384.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

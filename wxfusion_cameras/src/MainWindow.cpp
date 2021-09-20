@@ -28,6 +28,7 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     EVT_MENU(window::id::CAMERAINIT, MainWindow::InitializeCameras)
     EVT_MENU(window::id::ENABLEZOOMCAMERA, MainWindow::OnIPCamera)
     EVT_MENU(window::id::ENABLELWIRCAMERA, MainWindow::OnLWIRCamera)
+    EVT_MENU(window::id::ENABLELWIR384CAMERA, MainWindow::OnLWIR384Camera)
     EVT_MENU(window::id::ENABLENIRCAMERA, MainWindow::OnNIRCamera)
     EVT_MENU(window::id::ENABLEFUSIONCAMERA, MainWindow::OnFusionCamera)
     EVT_MENU(window::id::THERMALPOI, MainWindow::OnThermalPoi)
@@ -51,6 +52,7 @@ END_EVENT_TABLE()
 // Camera change events to use in the scripter class
 wxDEFINE_EVENT(wxEVT_CAMERACHANGED_IP, wxCommandEvent);
 wxDEFINE_EVENT(wxEVT_CAMERACHANGED_LWIR, wxCommandEvent);
+wxDEFINE_EVENT(wxEVT_CAMERACHANGED_LWIR384, wxCommandEvent);
 wxDEFINE_EVENT(wxEVT_CAMERACHANGED_NIR, wxCommandEvent);
 wxDEFINE_EVENT(wxEVT_CAMERACHANGED_FUSION, wxCommandEvent);
 
@@ -66,6 +68,11 @@ wxDEFINE_EVENT(wxEVT_IPCAMERA_EXCEPTION, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_LWIRCAMERA_FRAME, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_LWIRCAMERA_EMPTY, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_LWIRCAMERA_EXCEPTION, wxThreadEvent);
+
+// The same for LWIR384 camera
+wxDEFINE_EVENT(wxEVT_LWIR384CAMERA_FRAME, wxThreadEvent);
+wxDEFINE_EVENT(wxEVT_LWIR384CAMERA_EMPTY, wxThreadEvent);
+wxDEFINE_EVENT(wxEVT_LWIR384CAMERA_EXCEPTION, wxThreadEvent);
 
 // The same for NIR camera
 wxDEFINE_EVENT(wxEVT_NIRCAMERA_FRAME, wxThreadEvent);
@@ -230,6 +237,87 @@ wxThread::ExitCode LWIRCameraThread::Entry()
         catch (...)
         {
             wxThreadEvent* evt = new wxThreadEvent(wxEVT_LWIRCAMERA_EXCEPTION);
+
+            wxDELETE(frame);
+            evt->SetString("Unknown exception");
+            m_eventSink->QueueEvent(evt);
+            break;
+
+        }
+
+
+    }
+
+    return static_cast<wxThread::ExitCode>(nullptr);
+}
+
+//--------------------------------------------------------
+class LWIR384CameraThread : public wxThread
+{
+public:
+    struct CameraFrame
+    {
+        cv::UMat matBitmap;
+        long    timeGet{ 0 };
+    };
+    ThermalCam384 lwir384t;
+    LWIR384CameraThread(wxEvtHandler* eventSink, HANDLE handle);
+
+protected:
+    wxEvtHandler* m_eventSink{ nullptr };
+    HANDLE m_lwir384camera{ nullptr };
+
+    ExitCode Entry() override;
+};
+
+LWIR384CameraThread::LWIR384CameraThread(wxEvtHandler* eventSink, HANDLE handle)
+    : wxThread(wxTHREAD_JOINABLE),
+    m_eventSink(eventSink), m_lwir384camera(handle)
+{
+
+    wxASSERT(m_eventSink);
+}
+
+wxThread::ExitCode LWIR384CameraThread::Entry()
+{
+    wxStopWatch  stopWatch;
+
+    while (!TestDestroy())
+    {
+        CameraFrame* frame = nullptr;
+
+        try
+        {
+            frame = new CameraFrame;
+            stopWatch.Start();
+            frame->matBitmap = lwir384t.GetFrame(m_lwir384camera);
+            frame->timeGet = stopWatch.Time(); //measure retrieval time
+            if (!frame->matBitmap.empty()) //if successful, set payload
+            {
+                wxThreadEvent* evt = new wxThreadEvent(wxEVT_LWIR384CAMERA_FRAME);
+
+                evt->SetPayload(frame);
+                m_eventSink->QueueEvent(evt);
+            }
+            else // connection to camera lost
+            {
+                m_eventSink->QueueEvent(new wxThreadEvent(wxEVT_IPCAMERA_EMPTY));
+                wxDELETE(frame);
+                break;
+            }
+        }
+        catch (const std::exception& e)
+        {
+            wxThreadEvent* evt = new wxThreadEvent(wxEVT_LWIR384CAMERA_EXCEPTION);
+
+            wxDELETE(frame);
+            evt->SetString(e.what());
+            m_eventSink->QueueEvent(evt);
+            break;
+        }
+        catch (...)
+        {
+            wxThreadEvent* evt = new wxThreadEvent(wxEVT_LWIR384CAMERA_EXCEPTION);
 
             wxDELETE(frame);
             evt->SetString("Unknown exception");
@@ -428,6 +516,7 @@ public:
     void RFPointerOn();
     void RFPointerOff();
     void RFMeasure();
+    void QuickSaveSnapshot();
     wxPanel* m_parent;
     MainWindow* myParent;
 };
@@ -459,6 +548,18 @@ void Functions::RFMeasure()
     myParent->m_logpanel->m_logtext->AppendText("Measuring distance.. \n");
     wxString measurement = wxString::Format(wxT("Distance: %.2f meters \n"), rangefinder.Measure());
     myParent->m_logpanel->m_logtext->AppendText(measurement);
+}
+
+void Functions::QuickSaveSnapshot()
+{
+    auto t = std::time(nullptr);
+    auto tm = *std::localtime(&t);
+    std::stringstream ss;
+    ss << std::put_time(&tm, "%Y%m%d_%H-%M-%S");
+    wxBitmap bitmap;
+    bitmap = myParent->m_bitmapPanel->GetBitmap();
+    bitmap.SaveFile(ss.str() + ".png", wxBITMAP_TYPE_PNG);
+    myParent->m_logpanel->m_logtext->AppendText("Snapshot saved\n");
 }
 
 
@@ -607,7 +708,11 @@ wxThread::ExitCode Scripter::Entry()
                                         m_eventSink->QueueEvent(evt);
                                     }
                                 }
-
+                                else if (arrstr[0].ToStdString() == "snap") {
+                                    if (arrstr[1].ToStdString() == "1") {
+                                        fs.QuickSaveSnapshot();
+                                    }
+                                }
                                 else {
                                     myParent->m_logpanel->m_logtext->AppendText("\n");
                                     myParent->m_logpanel->m_logtext->AppendText(str);
@@ -786,6 +891,7 @@ MainWindow::MainWindow(wxWindow* parent,
     Clear();
     Bind(wxEVT_CAMERACHANGED_IP, &MainWindow::OnIPCamera, this);
     Bind(wxEVT_CAMERACHANGED_LWIR, &MainWindow::OnLWIRCamera, this);
+    Bind(wxEVT_CAMERACHANGED_LWIR384, &MainWindow::OnLWIR384Camera, this);
     Bind(wxEVT_CAMERACHANGED_NIR, &MainWindow::OnNIRCamera, this);
     Bind(wxEVT_CAMERACHANGED_FUSION, &MainWindow::OnFusionCamera, this);
     Bind(wxEVT_IPCAMERA_FRAME, &MainWindow::OnCameraFrame, this);
@@ -794,6 +900,9 @@ MainWindow::MainWindow(wxWindow* parent,
     Bind(wxEVT_LWIRCAMERA_FRAME, &MainWindow::OnLWIRCameraFrame, this);
     Bind(wxEVT_LWIRCAMERA_EMPTY, &MainWindow::OnCameraEmpty, this);
     Bind(wxEVT_LWIRCAMERA_EXCEPTION, &MainWindow::OnCameraException, this);
+    Bind(wxEVT_LWIR384CAMERA_FRAME, &MainWindow::OnLWIR384CameraFrame, this);
+    Bind(wxEVT_LWIR384CAMERA_EMPTY, &MainWindow::OnCameraEmpty, this);
+    Bind(wxEVT_LWIR384CAMERA_EXCEPTION, &MainWindow::OnCameraException, this);
     Bind(wxEVT_NIRCAMERA_FRAME, &MainWindow::OnNIRCameraFrame, this);
     Bind(wxEVT_NIRCAMERA_EMPTY, &MainWindow::OnCameraEmpty, this);  
     Bind(wxEVT_NIRCAMERA_EXCEPTION, &MainWindow::OnCameraException, this);
@@ -920,6 +1029,7 @@ void MainWindow::InitializeCameras(wxCommandEvent& event)
         DeleteIPCameraThread();
         DeleteNIRCameraThread();
         DeleteLWIRCameraThread();
+        DeleteLWIR384CameraThread();
         DeleteFusionCameraThread();
 
 
@@ -927,11 +1037,12 @@ void MainWindow::InitializeCameras(wxCommandEvent& event)
         m_logpanel->m_logtext->AppendText("Initializing cameras...\n");
         m_dataStream = nir.OpenDevice();
         m_lwirhandle = lwir.Init();
+        m_lwir384handle = lwir384.Init();
         if (!Proxy640USB_IsConnectToModule(m_lwirhandle) == eProxy640USBSuccess)
         {
             m_logpanel->m_logtext->AppendText("Could not connect to the LWIR camera.\n");
         }
-
+        lwir.Setup(m_lwir384handle);
         lwir.Setup(m_lwirhandle);
         fusion.init(nir.GetFrame(true, m_dataStream), lwir.GetFrame(m_lwirhandle), m_fusionoffsetx, m_fusionoffsetx, 0.5, true);
         m_logpanel->m_logtext->AppendText("Cameras initialized\n");
@@ -1101,9 +1212,6 @@ void MainWindow::OnLWIRCamera(wxCommandEvent& event)
     }
     Refresh();
 }
-
-
-
 void MainWindow::OnLWIRCameraFrame(wxThreadEvent& evt)
 {
     LWIRCameraThread::CameraFrame* frame = evt.GetPayload<LWIRCameraThread::CameraFrame*>();
@@ -1120,6 +1228,83 @@ void MainWindow::OnLWIRCameraFrame(wxThreadEvent& evt)
     if (m_crosshair) cv::drawMarker(frame->matBitmap, cv::Point(612, 512), cv::Scalar(0, 0, 255), cv::MARKER_CROSS, 50, 1);
     wxBitmap bitmap = ConvertMatToBitmap(frame->matBitmap, timeConvert);
     
+    if (bitmap.IsOk())
+        m_bitmapPanel->SetBitmap(bitmap, frame->timeGet, timeConvert);
+    else
+        m_bitmapPanel->SetBitmap(wxBitmap(), 0, 0);
+
+    delete frame;
+}
+
+
+// LWIR 384 CAMERA
+bool MainWindow::StartLWIR384CameraCapture(HANDLE handle)
+{
+    Clear();
+
+    if (!StartLWIR384CameraThread())
+    {
+        Clear();
+        return false;
+    }
+
+    return true;
+
+}
+bool MainWindow::StartLWIR384CameraThread()
+{
+    m_lwir384cameraThread = new LWIR384CameraThread(this, m_lwir384handle);
+    if (m_lwir384cameraThread->Run() != wxTHREAD_NO_ERROR)
+    {
+        delete m_lwir384cameraThread;
+        m_lwir384cameraThread = nullptr;
+        m_logpanel->m_logtext->AppendText("Could not create the thread needed to retrieve the images from a camera.\n");
+        return false;
+    }
+
+    return true;
+}
+void MainWindow::DeleteLWIR384CameraThread()
+{
+    if (m_lwir384cameraThread)
+    {
+        m_lwir384cameraThread->Delete();
+        delete m_lwir384cameraThread;
+        m_lwir384cameraThread = nullptr;
+    }
+}
+void MainWindow::OnLWIR384Camera(wxCommandEvent& event)
+{
+    m_onlyZoom = false;
+    InitializeCameras(event);
+    wxArrayString strings;
+    strings.push_back("NIR");
+    strings.push_back("Zoom");
+    strings.push_back("Fusion");
+    strings.push_back("Disabled");
+    m_videopanel->m_pip->Set(strings);
+    if (StartLWIR384CameraCapture(m_lwir384handle))
+    {
+        m_mode = LWIR384Camera;
+    }
+    Refresh();
+}
+void MainWindow::OnLWIR384CameraFrame(wxThreadEvent& evt)
+{
+    LWIR384CameraThread::CameraFrame* frame = evt.GetPayload<LWIR384CameraThread::CameraFrame*>();
+
+    // After deleting the camera thread we may still get a stray frame
+    // from yet unprocessed event, just silently drop it.
+    if (m_mode != LWIR384Camera)
+    {
+        delete frame;
+        return;
+    }
+
+    long     timeConvert = 0;
+    if (m_crosshair) cv::drawMarker(frame->matBitmap, cv::Point(612, 512), cv::Scalar(0, 0, 255), cv::MARKER_CROSS, 50, 1);
+    wxBitmap bitmap = ConvertMatToBitmap(frame->matBitmap, timeConvert);
+
     if (bitmap.IsOk())
         m_bitmapPanel->SetBitmap(bitmap, frame->timeGet, timeConvert);
     else
@@ -1503,30 +1688,34 @@ void MainWindow::OnKeyDown(wxKeyEvent& event) // TODO neveikia
 
 void MainWindow::SaveSnapshot(wxCommandEvent& event)
 {
-    //const wxString & dir = wxDirSelector("Choose a folder");
-
-    //if (!dir.empty())
-    //{
-    //    wxBitmap bitmap;
-    //    bitmap = m_bitmapPanel->GetBitmap();
-    //    bitmap.SaveFile(dir+"/1.png", wxBITMAP_TYPE_PNG);
-    //}
+    auto t = std::time(nullptr);
+    auto tm = *std::localtime(&t);
+    std::stringstream ss;
+    ss << std::put_time(&tm, "%Y%m%d_%H-%M-%S");
+    //std::put_time(&tm, "%d-%m-%Y %H-%M-%S")
 
     wxBitmap bitmap;
     bitmap = m_bitmapPanel->GetBitmap();
     //const wxString& savefile = wxSaveFileSelector(bitmap, ".png", "snapshot.png");
-    wxString filename = wxFileSelector("Save snapshot",wxEmptyString, wxEmptyString, wxEmptyString, "PNG files (*.png)|*.png", wxFD_SAVE);
+    wxString filename = wxFileSelector("Save snapshot",wxEmptyString, ss.str(), wxEmptyString, "PNG files (*.png)|*.png", wxFD_SAVE);
     if (!filename.empty())
         {
         bitmap.SaveFile(filename, wxBITMAP_TYPE_PNG);
-                
+        m_logpanel->m_logtext->AppendText("Snapshot saved\n");
             }
     //else: cancelled by user
 }
 
 void MainWindow::QuickSaveSnapshot(wxCommandEvent& event)
 {
-    wxBitmap bitmap;
-    bitmap = m_bitmapPanel->GetBitmap();
-    bitmap.SaveFile("C:/Users/PANTILT/source/repos/wxfusion_cameras/wxfusion_cameras/1.png", wxBITMAP_TYPE_PNG);
+    Functions fs(m_parent);
+    fs.QuickSaveSnapshot();
+    //auto t = std::time(nullptr);
+    //auto tm = *std::localtime(&t);
+    //std::stringstream ss;
+    //ss << std::put_time(&tm, "%Y%m%d_%H-%M-%S");
+    //wxBitmap bitmap;
+    //bitmap = m_bitmapPanel->GetBitmap();
+    //bitmap.SaveFile(ss.str()+".png", wxBITMAP_TYPE_PNG);
+    //m_logpanel->m_logtext->AppendText("Snapshot saved\n");
 }

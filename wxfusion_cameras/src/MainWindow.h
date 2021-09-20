@@ -4,6 +4,7 @@
 #include "wx/artprov.h"
 #include "id.h"
 #include "ThermalCam.h"
+#include "ThermalCam384.h"
 #include "NIRCam.h"
 #include "Fusion.h"
 
@@ -81,6 +82,7 @@ public:
     void OnKeyDown(wxKeyEvent& event);
     // options functions
     ThermalCam lwir;
+    ThermalCam384 lwir384;
     NIRCam nir;
     Fusion fusion;
     bool m_isInitialized = false;
@@ -98,6 +100,7 @@ public:
             WebCam,
             IPCamera,
             LWIRCamera,
+            LWIR384Camera,
             NIRCamera,
             FuseNIRLWIR
     };
@@ -115,6 +118,9 @@ public:
 
     LWIRCameraThread* m_lwircameraThread{ nullptr };
     HANDLE m_lwirhandle;
+
+    LWIR384CameraThread* m_lwir384cameraThread{ nullptr };
+    HANDLE m_lwir384handle;
 
     NIRCameraThread* m_nircameraThread{ nullptr };
     std::shared_ptr<peak::core::DataStream> m_dataStream{ nullptr };
@@ -164,6 +170,12 @@ public:
     bool StartLWIRCameraThread();
     void DeleteLWIRCameraThread();
     void OnLWIRCameraFrame(wxThreadEvent& evt);
+
+    void OnLWIR384Camera(wxCommandEvent&);
+    bool StartLWIR384CameraCapture(HANDLE handle);
+    bool StartLWIR384CameraThread();
+    void DeleteLWIR384CameraThread();
+    void OnLWIR384CameraFrame(wxThreadEvent& evt);
 
     void OnNIRCamera(wxCommandEvent&);
     bool StartNIRCameraCapture();
