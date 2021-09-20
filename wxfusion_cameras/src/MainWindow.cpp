@@ -37,6 +37,8 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     EVT_MENU(window::id::DCCAMERAS, MainWindow::OnDCCameras)
     EVT_MENU(window::id::READSETTINGS, MainWindow::ReadSettings)
     EVT_MENU(window::id::SAVESETTINGS, MainWindow::SaveSettings)
+    EVT_MENU(window::id::SAVESNAPSHOT, MainWindow::SaveSnapshot)
+    EVT_MENU(window::id::QUICKSAVESNAPSHOT, MainWindow::QuickSaveSnapshot)
     EVT_MENU(wxID_OPEN, MainWindow::OnOpen)
     EVT_BUTTON(window::id::BMEASUREDISTANCE, MainWindow::OnRFMeasure)
     EVT_RADIOBUTTON(window::id::BZOOMSTREAM, MainWindow::OnIPCamera)
@@ -721,6 +723,8 @@ MainWindow::MainWindow(wxWindow* parent,
     viewMenu->Append(window::id::NIRPOI, "NIR POI");
     viewMenu->Append(window::id::CROSSHAIR, "Crosshair");
     viewMenu->Append(window::id::STREAMINFO, "Stream information");
+    viewMenu->Append(window::id::QUICKSAVESNAPSHOT, "Quick save snapshot");
+    viewMenu->Append(window::id::SAVESNAPSHOT, "Save snapshot");
     //viewMenu->Append(window::id::STREAMINFO, "Stream information");
 
     // OPTIONS MENU
@@ -1497,3 +1501,32 @@ void MainWindow::OnKeyDown(wxKeyEvent& event) // TODO neveikia
     }
 }
 
+void MainWindow::SaveSnapshot(wxCommandEvent& event)
+{
+    //const wxString & dir = wxDirSelector("Choose a folder");
+
+    //if (!dir.empty())
+    //{
+    //    wxBitmap bitmap;
+    //    bitmap = m_bitmapPanel->GetBitmap();
+    //    bitmap.SaveFile(dir+"/1.png", wxBITMAP_TYPE_PNG);
+    //}
+
+    wxBitmap bitmap;
+    bitmap = m_bitmapPanel->GetBitmap();
+    //const wxString& savefile = wxSaveFileSelector(bitmap, ".png", "snapshot.png");
+    wxString filename = wxFileSelector("Save snapshot",wxEmptyString, wxEmptyString, wxEmptyString, "PNG files (*.png)|*.png", wxFD_SAVE);
+    if (!filename.empty())
+        {
+        bitmap.SaveFile(filename, wxBITMAP_TYPE_PNG);
+                
+            }
+    //else: cancelled by user
+}
+
+void MainWindow::QuickSaveSnapshot(wxCommandEvent& event)
+{
+    wxBitmap bitmap;
+    bitmap = m_bitmapPanel->GetBitmap();
+    bitmap.SaveFile("C:/Users/PANTILT/source/repos/wxfusion_cameras/wxfusion_cameras/1.png", wxBITMAP_TYPE_PNG);
+}

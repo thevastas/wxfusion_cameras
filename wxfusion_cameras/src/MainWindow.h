@@ -11,6 +11,7 @@
 #include <wx/config.h>
 #include <wx/confbase.h>
 #include <wx/fileconf.h>
+//#include <wx/dirdlg.h>
 //#include "bmpfromocvpanel.h"
 //#include "View.h"
 
@@ -185,6 +186,9 @@ public:
 
     void ReadSettings(wxCommandEvent& event);
     void SaveSettings(wxCommandEvent& event);
+
+    void SaveSnapshot(wxCommandEvent& event);
+    void QuickSaveSnapshot(wxCommandEvent& event);
 
     wxDECLARE_EVENT_TABLE();
 };
