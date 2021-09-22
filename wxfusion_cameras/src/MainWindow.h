@@ -3,8 +3,8 @@
 #include "ControlPanel.h"
 #include "wx/artprov.h"
 #include "id.h"
-#include "ThermalCam.h"
 #include "ThermalCam384.h"
+#include "ThermalCam.h"
 #include "NIRCam.h"
 #include "Fusion.h"
 
@@ -27,6 +27,7 @@ namespace cv
 
 class CameraThread;
 class LWIRCameraThread;
+class LWIR384CameraThread;
 class NIRCameraThread;
 class FusionCameraThread;
 class Scripter;

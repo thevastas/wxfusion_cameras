@@ -53,7 +53,7 @@ void ThermalCam384::Setup(HANDLE handle) {
 
 cv::UMat ThermalCam384::GetFrame(HANDLE handle) {
 	Proxy384LUSB_GetImage(handle, frame, meta, timeout);
-	std::memcpy(srcImage.data, frame, 614400);
+	std::memcpy(srcImage.data, frame, 200448);
 	srcImage.copyTo(srcuImage);
 
 

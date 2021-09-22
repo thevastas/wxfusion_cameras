@@ -526,7 +526,9 @@ Functions::Functions(wxPanel* parent) :
 {
     myParent = (MainWindow*)m_parent->GetParent();
 }
+
 //Rangefinder functions
+
 void Functions::RFPointerOn()
 {
     
@@ -707,6 +709,11 @@ wxThread::ExitCode Scripter::Entry()
                                         wxThreadEvent* evt = new wxThreadEvent(wxEVT_CAMERACHANGED_FUSION);
                                         m_eventSink->QueueEvent(evt);
                                     }
+                                    else if (arrstr[1].ToStdString() == "lwir384") {
+                                        myParent->m_logpanel->m_logtext->AppendText("\nTurning on the LWIR384 camera");
+                                        wxThreadEvent* evt = new wxThreadEvent(wxEVT_CAMERACHANGED_LWIR384);
+                                        m_eventSink->QueueEvent(evt);
+                                    }
                                 }
                                 else if (arrstr[0].ToStdString() == "snap") {
                                     if (arrstr[1].ToStdString() == "1") {
@@ -749,14 +756,6 @@ void Scripter::OnClose(wxCloseEvent&)
 void Scripter::OnThreadUpdate(wxThreadEvent& evt)
 {
 }
-
-
-
-
-
-
-
-
 
 
 //--------------------------------------------------------
@@ -815,8 +814,9 @@ MainWindow::MainWindow(wxWindow* parent,
     cameraMenu = new wxMenu();
     menuBar->Append(cameraMenu, _("&Camera"));
     cameraMenu->Append(window::id::CAMERAINIT, "Initialize cameras");
-    cameraMenu->Append(window::id::ENABLEZOOMCAMERA, "Enable zoom camera");
+    cameraMenu->Append(window::id::ENABLEZOOMCAMERA, "Enable VIS camera");
     cameraMenu->Append(window::id::ENABLELWIRCAMERA, "Enable LWIR camera");
+    cameraMenu->Append(window::id::ENABLELWIR384CAMERA, "Enable LWIR384 camera");
     cameraMenu->Append(window::id::ENABLENIRCAMERA, "Enable NIR camera");
     cameraMenu->Append(window::id::ENABLEFUSIONCAMERA, "Enable fusion camera");
     cameraMenu->Append(window::id::DCCAMERAS, "Disconnect cameras");
@@ -921,8 +921,8 @@ MainWindow::~MainWindow()
     DeleteFusionCameraThread();
 }
 
-
 // file functions
+
 void MainWindow::OnConnectZoom(wxCommandEvent& event) {
 
 }
@@ -930,7 +930,9 @@ void MainWindow::OnQuit(wxCommandEvent& event) {
     
     Close();
 }
+
 // view functions
+
 void MainWindow::OnNirPoi(wxCommandEvent& event)
 {
     wxMessageBox("NIR POI not implemented");
@@ -1042,7 +1044,11 @@ void MainWindow::InitializeCameras(wxCommandEvent& event)
         {
             m_logpanel->m_logtext->AppendText("Could not connect to the LWIR camera.\n");
         }
-        lwir.Setup(m_lwir384handle);
+        if (!Proxy384LUSB_IsConnectToModule(m_lwir384handle) == eProxy384LUSBSuccess)
+        {
+            m_logpanel->m_logtext->AppendText("Could not connect to the LWIR384 camera.\n");
+        }
+        lwir384.Setup(m_lwir384handle);
         lwir.Setup(m_lwirhandle);
         fusion.init(nir.GetFrame(true, m_dataStream), lwir.GetFrame(m_lwirhandle), m_fusionoffsetx, m_fusionoffsetx, 0.5, true);
         m_logpanel->m_logtext->AppendText("Cameras initialized\n");
@@ -1201,11 +1207,11 @@ void MainWindow::OnLWIRCamera(wxCommandEvent& event)
     m_onlyZoom = false;
     InitializeCameras(event);
     wxArrayString strings;
-    strings.push_back("NIR");
-    strings.push_back("Zoom");
-    strings.push_back("Fusion");
-    strings.push_back("Disabled");
-    m_videopanel->m_pip->Set(strings);
+    //strings.push_back("NIR");
+    //strings.push_back("Zoom");
+    //strings.push_back("Fusion");
+    //strings.push_back("Disabled");
+    //m_videopanel->m_pip->Set(strings);
     if (StartLWIRCameraCapture(m_lwirhandle))
     {
         m_mode = LWIRCamera;
@@ -1470,8 +1476,6 @@ void MainWindow::OnFusionCameraFrame(wxThreadEvent& evt) {
     delete frame;
 }
 
-
-
 // ETC
 
 void MainWindow::OnClear(wxCommandEvent&)
@@ -1529,8 +1533,6 @@ void MainWindow::OnStreamInfo(wxCommandEvent&)
     wxGetSingleChoice("Name: value", "Properties", properties, this);
 }
 
-
-
 void MainWindow::OnCameraEmpty(wxThreadEvent&)
 {
     wxLogError("Connection to the camera lost.");
@@ -1544,8 +1546,8 @@ void MainWindow::OnCameraException(wxThreadEvent& evt)
     Clear();
 }
 
-
 // Rangefinder functions
+
 void MainWindow::OnRFPointerOn(wxCommandEvent& event)
 {
     Functions fs(m_parent);
@@ -1558,13 +1560,13 @@ void MainWindow::OnRFPointerOff(wxCommandEvent& event)
     fs.RFPointerOff();
 }
 
-
-
 void MainWindow::OnRFMeasure(wxCommandEvent& event)
 {
     Functions fs(m_parent);
     fs.RFMeasure();
 }
+
+// Reading/Writing
 
 void MainWindow::OnOpen(wxCommandEvent& event)
 {

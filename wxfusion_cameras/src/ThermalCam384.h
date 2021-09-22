@@ -11,13 +11,13 @@ private:
 	char name[128];
 	int timeout = 10;
 	int* meta = (int*)malloc(600);
-	unsigned short* frame = (unsigned short*)malloc(614400);
+	unsigned short* frame = (unsigned short*)malloc(200448);
 	void* paData = NULL;
-	short* tableoffset = (short*)malloc(614400);
+	short* tableoffset = (short*)malloc(200448);
 	int i;
 public:
 
-	cv::Mat srcImage = cv::Mat::zeros(480, 640, CV_16U);
+	cv::Mat srcImage = cv::Mat::zeros(288, 384, CV_16U);
 	cv::UMat srcuImage;
 	HANDLE handle = NULL;
 	HANDLE Init();
@@ -31,7 +31,7 @@ public:
 	cv::UMat uimage2;
 	cv::UMat uimage3;
 	cv::UMat uimage4;
-	cv::UMat outImage = cv::UMat::zeros(480, 640, CV_8UC3);
+	cv::UMat outImage = cv::UMat::zeros(288, 384, CV_8UC3);
 	cv::UMat resizedImage = cv::UMat::zeros(1296, 972, CV_8UC3);
 };
 
