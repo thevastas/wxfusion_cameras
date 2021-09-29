@@ -17,8 +17,8 @@ private:
 	int i;
 public:
 
-	cv::Mat srcImage = cv::Mat::zeros(288, 384, CV_16U);
-	cv::UMat srcuImage;
+	cv::Mat m_srcImage = cv::Mat::zeros(288, 384, CV_16U);
+	cv::UMat m_srcuImage;
 	HANDLE handle = NULL;
 	HANDLE Init();
 	void Setup(HANDLE handle);
@@ -27,10 +27,10 @@ public:
 	unsigned char offset = '1';
 	unsigned char gain = '0';
 	wxPanel* m_parent;
-	cv::UMat uimage;
-	cv::UMat uimage2;
-	cv::UMat uimage3;
-	cv::UMat uimage4;
+	cv::UMat m_uimage;
+	cv::UMat m_uimage2;
+	cv::UMat m_uimage3;
+	cv::UMat m_uimage4;
 	cv::UMat outImage = cv::UMat::zeros(288, 384, CV_8UC3);
 	cv::UMat resizedImage = cv::UMat::zeros(1296, 972, CV_8UC3);
 };

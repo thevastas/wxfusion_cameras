@@ -53,18 +53,18 @@ void ThermalCam384::Setup(HANDLE handle) {
 
 cv::UMat ThermalCam384::GetFrame(HANDLE handle) {
 	Proxy384LUSB_GetImage(handle, frame, meta, timeout);
-	std::memcpy(srcImage.data, frame, 200448);
-	srcImage.copyTo(srcuImage);
+	std::memcpy(m_srcImage.data, frame, 200448);
+	m_srcImage.copyTo(m_srcuImage);
 
 
-	if (!srcuImage.empty()) {
-		cv::cvtColor(srcuImage, uimage, cv::COLOR_GRAY2BGR);
-		cv::convertScaleAbs(uimage, uimage2, 1.0 / 256);
-		cv::resize(uimage2, uimage3, cv::Size(1296, 972));
-		uimage3.convertTo(uimage4, CV_8UC3);
+	if (!m_srcuImage.empty()) {
+		cv::cvtColor(m_srcuImage, m_uimage, cv::COLOR_GRAY2BGR);
+		cv::convertScaleAbs(m_uimage, m_uimage2, 1.0 / 256);
+		cv::resize(m_uimage2, m_uimage3, cv::Size(1296, 972));
+		m_uimage3.convertTo(m_uimage4, CV_8UC3);
 
 	}
-	return uimage4;
+	return m_uimage4;
 
 }
 

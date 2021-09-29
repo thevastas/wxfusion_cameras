@@ -1049,8 +1049,8 @@ void MainWindow::InitializeCameras(wxCommandEvent& event)
             m_logpanel->m_logtext->AppendText("Could not connect to the LWIR384 camera.\n");
         }
         lwir384.Setup(m_lwir384handle);
-        lwir.Setup(m_lwirhandle);
-        fusion.init(nir.GetFrame(true, m_dataStream), lwir.GetFrame(m_lwirhandle), m_fusionoffsetx, m_fusionoffsetx, 0.5, true);
+        //lwir.Setup(m_lwirhandle);
+        //fusion.init(nir.GetFrame(true, m_dataStream), lwir.GetFrame(m_lwirhandle), m_fusionoffsetx, m_fusionoffsetx, 0.5, true);
         m_logpanel->m_logtext->AppendText("Cameras initialized\n");
         m_isInitialized = true;
 
