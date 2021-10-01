@@ -1610,10 +1610,11 @@ cv::UMat NIRCam::GetFrame(bool automaticmode, std::shared_ptr<peak::core::DataSt
     m_dataStream->QueueBuffer(buffer);
     cvImage.copyTo(uimage);
     cv::flip(uimage, uimage2, 1);
-    cv::resize(uimage2, uimage3, cv::Size(1296, 972));
-    uimage3.convertTo(uimage4, CV_8UC3);
+    cv::cvtColor(uimage2, uimage3, cv::COLOR_BGR2GRAY);
+    cv::resize(uimage3, uimage4, cv::Size(1296, 972));
+    uimage3.convertTo(uimage5, CV_8UC3);
         
-    return uimage4;
+    return uimage5;
 }
 
 void NIRCam::CloseDevice()

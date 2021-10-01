@@ -682,7 +682,7 @@ public:
     std::shared_ptr<peak::core::DataStream> OpenDevice();
     cv::UMat GetFrame(bool automaticmode, std::shared_ptr<peak::core::DataStream> m_dataStream);
     cv::Mat cvImage = cv::Mat::zeros(2048, 2448, CV_8UC3);
-    cv::UMat uimage, uimage2, uimage3, uimage4;
+    cv::UMat uimage, uimage2, uimage3, uimage4, uimage5;
     cv::Mat outImage;
     void CloseDevice();
 };
